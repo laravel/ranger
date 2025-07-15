@@ -4,7 +4,6 @@ namespace Laravel\Ranger\Collectors;
 
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Validation\Rule as ValidationRule;
@@ -13,7 +12,6 @@ use Laravel\Ranger\Debug;
 use Laravel\Ranger\Util\Parser;
 use Laravel\Ranger\Util\TypeResolver;
 use Laravel\Ranger\Validation\Rule;
-use Laravel\Ranger\Validation\Rules;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ArrayItem;
 use PhpParser\Node\Expr\StaticCall;
@@ -21,10 +19,7 @@ use PhpParser\Node\Param;
 use PhpParser\Node\Scalar\String_;
 use ReflectionClass;
 use ReflectionMethod;
-use Spatie\StructureDiscoverer\Discover;
-use SplFileInfo;
 use Stringable;
-use Symfony\Component\Finder\Finder;
 
 class FormRequests
 {
@@ -54,8 +49,7 @@ class FormRequests
         if ($reflection instanceof ReflectionMethod) {
             $node = $this->parser->nodeFinder()->findFirst(
                 $parsed,
-                fn($node) =>
-                $node instanceof Node\Stmt\ClassMethod &&
+                fn ($node) => $node instanceof Node\Stmt\ClassMethod &&
                     $node->name->toString() === $method,
 
             );
@@ -74,8 +68,7 @@ class FormRequests
 
         $node = $this->parser->nodeFinder()->findFirst(
             $parsed,
-            fn($node) =>
-            $node->getStartLine() >= $reflection->getStartLine()
+            fn ($node) => $node->getStartLine() >= $reflection->getStartLine()
                 && $node->getEndLine() <= $reflection->getEndLine()
                 && $node instanceof Node\Expr\StaticCall
                 && $node->name->toString() === 'validate'
@@ -83,7 +76,7 @@ class FormRequests
                 && $node->getArgs()[0]->value instanceof Node\Expr\Array_
         );
 
-        if (!$node) {
+        if (! $node) {
             return null;
         }
 
@@ -96,7 +89,7 @@ class FormRequests
 
     protected function isFormRequest(Param $item): bool
     {
-        if (!($item->type instanceof Node\Name\FullyQualified) || !class_exists($item->type->toString())) {
+        if (! ($item->type instanceof Node\Name\FullyQualified) || ! class_exists($item->type->toString())) {
             return false;
         }
 
@@ -114,19 +107,19 @@ class FormRequests
         }
 
         $stmts = $this->parser->parse($reflectionClass);
-        $method = $this->parser->nodeFinder()->find($stmts, fn(Node $node) => $node instanceof Node\Stmt\ClassMethod && $node->name->toString() === 'rules');
+        $method = $this->parser->nodeFinder()->find($stmts, fn (Node $node) => $node instanceof Node\Stmt\ClassMethod && $node->name->toString() === 'rules');
 
         Debug::log("Processing {$class}...");
 
-        return collect($this->parser->nodeFinder()->find($method, fn(Node $node) => $node instanceof Node\Stmt\Return_))
-            ->filter(fn(Node\Stmt\Return_ $node) => $node->expr instanceof Node\Expr\Array_)
-            ->map(fn(Node\Stmt\Return_ $node) => $node->expr)
+        return collect($this->parser->nodeFinder()->find($method, fn (Node $node) => $node instanceof Node\Stmt\Return_))
+            ->filter(fn (Node\Stmt\Return_ $node) => $node->expr instanceof Node\Expr\Array_)
+            ->map(fn (Node\Stmt\Return_ $node) => $node->expr)
             ->map(
-                fn(Node\Expr\Array_ $node) => collect($node->items)
+                fn (Node\Expr\Array_ $node) => collect($node->items)
                     ->mapWithKeys($this->normalizeRules(...))
                     ->undot()
             )
-            ->flatMap(fn($r) => $r);
+            ->flatMap(fn ($r) => $r);
     }
 
     protected function normalizeRules(Node\Expr\ArrayItem $item)
@@ -140,7 +133,7 @@ class FormRequests
         if ($item->value instanceof Node\Expr\Array_) {
             return [
                 $key => collect($item->value->items)
-                    ->filter(fn(Node\Expr\ArrayItem $item) => $item->value instanceof String_
+                    ->filter(fn (Node\Expr\ArrayItem $item) => $item->value instanceof String_
                         || ($item->value instanceof StaticCall && $item->value->class->toString() === ValidationRule::class))
                     ->map(function (Node\Expr\ArrayItem $item) {
                         if ($item->value instanceof String_) {
@@ -150,7 +143,7 @@ class FormRequests
                         $expr = $this->parser->printer()->prettyPrintExpr($item->value);
 
                         try {
-                            $result = eval('return call_user_func(function() { return ' . $expr . '; });');
+                            $result = eval('return call_user_func(function() { return '.$expr.'; });');
 
                             return $result instanceof Stringable ? (string) $result : $result;
                         } catch (\Throwable $e) {
@@ -163,7 +156,7 @@ class FormRequests
                     })
                     ->filter()
                     ->map(
-                        fn($item) => $item instanceof ArrayItem && $item->value instanceof String_
+                        fn ($item) => $item instanceof ArrayItem && $item->value instanceof String_
                             ? new Rule($item->value->value) : new Rule($item)
                     ),
             ];
@@ -173,7 +166,7 @@ class FormRequests
             return [
                 $key => collect(explode('|', $item->value->value))
                     ->map('trim')
-                    ->map(fn($rule) => new Rule($rule)),
+                    ->map(fn ($rule) => new Rule($rule)),
             ];
         }
 
