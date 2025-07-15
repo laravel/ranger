@@ -5,7 +5,7 @@ namespace Laravel\Ranger\Resolvers\Expr;
 use Illuminate\Support\Arr;
 use Laravel\Ranger\Debug;
 use Laravel\Ranger\Resolvers\AbstractResolver;
-use Laravel\Ranger\Types\ClassResult;
+use Laravel\Ranger\Types\ClassType;
 use Laravel\Ranger\Types\Contracts\Type as ResultContract;
 use Laravel\Ranger\Types\Type as RangerType;
 use PhpParser\Node;
@@ -26,7 +26,7 @@ class MethodCall extends AbstractResolver
 
         $varType = $this->from($node->var);
 
-        if ($varType instanceof ClassResult) {
+        if ($varType instanceof ClassType) {
             $returnType = $this->reflector->methodReturnType($varType, $node->name->name, $node);
 
             if ($returnType) {
@@ -56,8 +56,8 @@ class MethodCall extends AbstractResolver
 
             $return = collect(Arr::wrap($var))
                 ->map(function ($v) use ($node) {
-                    if ($v instanceof ClassResult) {
-                        return $this->getFromClassResult($v, $node);
+                    if ($v instanceof ClassType) {
+                        return $this->getFromClassType($v, $node);
                     }
 
                     if (is_string($v) && class_exists($v)) {
@@ -77,25 +77,25 @@ class MethodCall extends AbstractResolver
         return RangerType::mixed();
     }
 
-    protected function getFromClassResult(ClassResult $classResult, Node\Expr\MethodCall $node): ResultContract
+    protected function getFromClassType(ClassType $classType, Node\Expr\MethodCall $node): ResultContract
     {
-        $result = $this->reflector->methodReturnType($classResult->value, $node->name->name, $node);
+        $result = $this->reflector->methodReturnType($classType->value, $node->name->name, $node);
 
         if ($result) {
             return $result;
         }
 
-        if (method_exists($classResult->value, $node->name->name)) {
+        if (method_exists($classType->value, $node->name->name)) {
             // We couldn't figure it out...
             return RangerType::mixed();
         }
 
-        if (! method_exists($classResult->value, 'hasMacro') || ! $classResult->value::hasMacro($node->name->name)) {
+        if (! method_exists($classType->value, 'hasMacro') || ! $classType->value::hasMacro($node->name->name)) {
             // If the method doesn't exist and the class doesn't have macros, we can't do anything
             return RangerType::mixed();
         }
 
-        $reflection = new ReflectionClass($classResult->value);
+        $reflection = new ReflectionClass($classType->value);
         $reflectionProperty = $reflection->getProperty('macros');
         $reflectionProperty->setAccessible(true);
         $macros = $reflectionProperty->getValue($reflection);

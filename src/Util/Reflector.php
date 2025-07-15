@@ -4,8 +4,8 @@ namespace Laravel\Ranger\Util;
 
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
-use Laravel\Ranger\Repos\Models;
-use Laravel\Ranger\Types\ClassResult;
+use Laravel\Ranger\Collectors\Models as CollectorsModels;
+use Laravel\Ranger\Types\ClassType;
 use Laravel\Ranger\Types\Contracts\Type as ResultContract;
 use Laravel\Ranger\Types\Type as RangerType;
 use PhpParser\Node;
@@ -56,12 +56,12 @@ class Reflector
         return null;
     }
 
-    public function methodReturnType(string|ReflectionClass|ClassResult $class, string $method, ?CallLike $methodNode = null): ?ResultContract
+    public function methodReturnType(string|ReflectionClass|ClassType $class, string $method, ?CallLike $methodNode = null): ?ResultContract
     {
         try {
             $className = match (true) {
                 $class instanceof ReflectionClass => $class->getName(),
-                $class instanceof ClassResult => $class->value,
+                $class instanceof ClassType => $class->value,
                 default => $class,
             };
 
@@ -194,17 +194,19 @@ class Reflector
         return null;
     }
 
-    public function propertyType(string|ReflectionClass|ClassResult $class, string $property): ?ResultContract
+    public function propertyType(string|ReflectionClass|ClassType $class, string $property): ?ResultContract
     {
         $class = match (true) {
-            $class instanceof ClassResult => $class->value,
+            $class instanceof ClassType => $class->value,
             default => $class,
         };
 
-        if (is_string($class) && Models::has($class)) {
-            $model = Models::get($class);
+        if (is_string($class)) {
+            $model = app(CollectorsModels::class)->getCollection()->first(fn ($m) => $m->name === $class);
 
-            return $model[$property] ?? null;
+            if ($model) {
+                return $model->getAttributes()[$property] ?? $model->getRelations()[$property] ?? null;
+            }
         }
 
         try {

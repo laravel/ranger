@@ -8,6 +8,7 @@ use Laravel\Ranger\Types\Type as RangerType;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
 
 class Stan
@@ -35,7 +36,9 @@ class Stan
             return null;
         }
 
-        if (($stanType ?? 'mixed') !== 'mixed') {
+        $stanType = $stanType ?? 'mixed';
+
+        if ($stanType !== 'mixed' && ! ($stanType instanceof MixedType)) {
             if (is_array($stanType)) {
                 return RangerType::union(...array_map(fn ($type) => app(StanTypeResolver::class)->from($type), $stanType));
             }
