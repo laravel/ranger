@@ -1,0 +1,1 @@
+export type BroadcastEvent = 'UserCreated' | 'UserUpdated' | 'PostCreated';
