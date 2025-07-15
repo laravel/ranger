@@ -34,7 +34,7 @@ class Routes extends Collector
     {
         $defaults = collect($this->router->gatherRouteMiddleware($route))
             ->map($this->collectMiddlewareDefaults(...))
-            ->flatMap(fn($r) => $r);
+            ->flatMap(fn ($r) => $r);
 
         $newRoute = new Route($route, $defaults, $this->forcedScheme, $this->forcedRoot);
 
@@ -97,7 +97,7 @@ class Routes extends Collector
         }
 
         $methodContents = str($methodContents)->after('{')->beforeLast('}')->trim();
-        $tokens = token_get_all('<?php ' . $methodContents);
+        $tokens = token_get_all('<?php '.$methodContents);
         $foundUrlFacade = false;
         $defaults = [];
         $inArray = false;

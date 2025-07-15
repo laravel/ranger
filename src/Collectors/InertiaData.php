@@ -35,7 +35,7 @@ class InertiaData
 
         $nodes = $this->parser->nodeFinder()->find(
             $parsed,
-            fn($node) => (
+            fn ($node) => (
                 $node->getStartLine() >= $reflection->getStartLine() &&
                 $node->getEndLine() <= $reflection->getEndLine()
             ) && ((
