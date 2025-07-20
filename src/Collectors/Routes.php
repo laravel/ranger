@@ -27,7 +27,22 @@ class Routes extends Collector
 
     public function collect(): Collection
     {
-        return collect($this->router->getRoutes())->map($this->mapToRoute(...));
+        return collect($this->router->getRoutes())->map($this->mapToRoute(...))->map($this->resolveResponses(...));
+    }
+
+    protected function resolveResponses(Route $route): Route
+    {
+        $possibleResponses = collect($route->possibleResponses())->map(function ($response) {
+            if (! is_string($response)) {
+                return $response;
+            }
+
+            return InertiaComponents::getComponent($response);
+        });
+
+        $route->setPossibleResponses($possibleResponses->all());
+
+        return $route;
     }
 
     protected function mapToRoute(BaseRoute $route): Route
@@ -46,11 +61,10 @@ class Routes extends Collector
 
         $possibleResponses = [];
 
-        $inertiaResponses = app(InertiaData::class)->parseResponse($route->getAction());
+        $responses = app(Response::class)->parseResponse($route->getAction());
 
-        if (count($inertiaResponses) > 0) {
-            // TODO: What about scenarios where the same component is returned from multiple routes
-            array_push($possibleResponses, ...$inertiaResponses);
+        if (count($responses) > 0) {
+            array_push($possibleResponses, ...$responses);
         }
 
         $newRoute->setPossibleResponses($possibleResponses);

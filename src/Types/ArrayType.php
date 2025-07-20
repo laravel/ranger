@@ -10,4 +10,17 @@ class ArrayType extends AbstractType implements Contracts\Type
     {
         //
     }
+
+    /**
+     * @return Collection<int|string, mixed>
+     */
+    public function keys()
+    {
+        return collect($this->value)->keys();
+    }
+
+    public function isList(): bool
+    {
+        return array_is_list(collect($this->value)->toArray());
+    }
 }

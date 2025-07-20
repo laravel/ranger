@@ -24,9 +24,9 @@ class AbstractType
         return $this;
     }
 
-    public function optional(): static
+    public function optional(bool $optional = true): static
     {
-        $this->required = false;
+        $this->required = ! $optional;
 
         return $this;
     }

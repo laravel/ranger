@@ -2,6 +2,7 @@
 
 namespace Laravel\Ranger\Resolvers\Expr;
 
+use Laravel\Ranger\Known\Known;
 use Laravel\Ranger\Resolvers\AbstractResolver;
 use Laravel\Ranger\Types\ClassType;
 use Laravel\Ranger\Types\Contracts\Type as ResultContract;
@@ -12,6 +13,10 @@ class StaticCall extends AbstractResolver
 {
     public function resolve(Node\Expr\StaticCall $node): ResultContract
     {
+        if (($known = Known::resolve($node->class->toString(), $node->name->name, ...$node->getArgs())) !== false) {
+            return RangerType::from($known);
+        }
+
         $stanType = $this->getStanType($node);
 
         if ($stanType instanceof ClassType) {
