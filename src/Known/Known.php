@@ -4,6 +4,7 @@ namespace Laravel\Ranger\Known;
 
 use Illuminate\Support\Facades\Auth as AuthFacade;
 use Illuminate\Support\Facades\Request as RequestFacade;
+use Laravel\Ranger\Collectors\Models;
 
 class Known
 {
@@ -15,6 +16,14 @@ class Known
     public static function resolve(string $class, string $method, ...$args)
     {
         if (! isset(self::$mapping[$class])) {
+            $model = app(Models::class)->get($class);
+
+            if ($model && method_exists(Model::class, $method)) {
+                Model::setModel($model);
+
+                return call_user_func_array([Model::class, $method], $args);
+            }
+
             return false;
         }
 

@@ -39,6 +39,7 @@ class StaticCall extends AbstractResolver
 
         if ($varType instanceof ClassType || (is_string($varType) && class_exists($varType))) {
             $classVarType = $varType instanceof ClassType ? $varType->resolved() : $varType;
+            $varType = $varType instanceof ClassType ? $varType->value : $varType;
 
             if ($classVarType !== $varType) {
                 $reflection = $this->reflector->reflectClass($classVarType);
