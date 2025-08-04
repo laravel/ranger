@@ -228,8 +228,7 @@ class Models extends Collector
 
     protected function getReturnType(string|ReflectionClass $class, string $method): ?ResultContract
     {
-        // TODO: Swap this out for the Reflector class
-        $reflection = $class instanceof ReflectionClass ? $class : new ReflectionClass($class);
+        $reflection = $this->reflector->reflectClass($class);
 
         if (! $reflection->hasMethod($method)) {
             return null;
