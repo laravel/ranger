@@ -3,9 +3,6 @@
 namespace Laravel\Ranger\Util;
 
 use Laravel\Ranger\Debug;
-use Laravel\Ranger\Types\Contracts\Type;
-use Laravel\Ranger\Types\Converters\ResultConverter;
-use Laravel\Ranger\Types\Converters\TypeScriptConverter;
 use PhpParser\NodeAbstract;
 
 class TypeResolver
@@ -34,65 +31,5 @@ class TypeResolver
             'context' => $context,
             'parsed' => $this->parsed,
         ])->resolve($node);
-    }
-
-    public function collapseIntoRecord(iterable $records): string
-    {
-        $fields = [];
-        $keys = [];
-        $allFieldsOptional = false;
-
-        foreach ($records as $record) {
-            $recordValue = $record instanceof Result ? $record->value : $record;
-
-            if (is_string($recordValue)) {
-                // TODO: Figure this out
-                continue;
-            }
-
-            $keys[] = array_keys($recordValue);
-
-            if (count($recordValue) === 0) {
-                $allFieldsOptional = true;
-            }
-
-            foreach ($recordValue as $key => $value) {
-                $fields[$key] ??= [];
-                $fields[$key][] = $value;
-            }
-        }
-
-        $requiredKeys = array_intersect(...$keys);
-
-        $final = ['{'];
-
-        foreach ($fields as $key => $values) {
-            $type = $key;
-
-            $hasOptional = collect($values)->first(fn ($value) => $value->isOptional()) !== null;
-
-            if ($hasOptional || $allFieldsOptional || ! in_array($key, $requiredKeys)) {
-                $type .= '?';
-            }
-
-            $types = collect($values)
-                ->map(fn ($value) => ResultConverter::to($value, TypeScriptConverter::class))
-                ->unique()
-                ->sort()
-                ->values();
-
-            if ($types->count() > 1) {
-                // We have an any in the mix, but we know the type from something else, so remove it
-                $types = $types->filter(fn ($type) => $type !== 'any');
-            }
-
-            $type .= ': '.$types->implode(' | ');
-
-            $final[] = TypeScript::indent($type, 1);
-        }
-
-        $final[] = '}';
-
-        return implode(PHP_EOL, $final);
     }
 }
