@@ -17,12 +17,6 @@ class NullsafePropertyFetch extends AbstractResolver
     {
         $type = $this->resolveProperty($node);
 
-        // dd($node, $type);
-
-        // if (! in_array('null', $type)) {
-        //     $type[] = 'null';
-        // }
-
         return RangerType::union(...Arr::wrap($type))->nullable();
     }
 }

@@ -2,24 +2,21 @@
 
 namespace Laravel\Ranger\Resolvers\Expr;
 
-use Illuminate\Support\Arr;
 use Laravel\Ranger\Resolvers\AbstractResolver;
+use Laravel\Ranger\Resolvers\Concerns\ResolvesMethods;
 use Laravel\Ranger\Types\Contracts\Type as ResultContract;
-use Laravel\Ranger\Types\Type as RangerType;
 use PhpParser\Node;
 
 class NullsafeMethodCall extends AbstractResolver
 {
+    use ResolvesMethods;
+
     public function resolve(Node\Expr\NullsafeMethodCall $node): ResultContract
     {
-        $type = $this->from($node->var);
+        $resolved = $this->resolveMethod($node);
 
-        $type = Arr::wrap($type);
+        $resolved->nullable();
 
-        if (! in_array('null', $type)) {
-            $type[] = RangerType::null();
-        }
-
-        return RangerType::union(...$type);
+        return $resolved;
     }
 }
