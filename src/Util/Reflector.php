@@ -225,19 +225,12 @@ class Reflector
 
     public function propertyType(string|ReflectionClass|ClassType $class, string $property): ?TypeContract
     {
-        $class = match (true) {
-            $class instanceof ClassType => $class->value,
-            default => $class,
-        };
+        $class = $this->reflectClass($class);
 
-        if (! is_string($class)) {
-            dd($class, 'not a string!');
-        }
-
-        return $this->propertyCache[$class.'::'.$property] ??= $this->resolvePropertyType($class, $property);
+        return $this->propertyCache[$class->getName().'::'.$property] ??= $this->resolvePropertyType($class, $property);
     }
 
-    protected function resolvePropertyType(string $class, string $property): ?TypeContract
+    protected function resolvePropertyType(ReflectionClass $class, string $property): ?TypeContract
     {
         if (is_string($class)) {
             $model = app(CollectorsModels::class)->get($class);
