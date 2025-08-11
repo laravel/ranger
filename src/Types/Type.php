@@ -95,9 +95,21 @@ class Type
         dd('something else from', $value, debug_backtrace(limit: 3));
     }
 
+    protected static function flattenUnion(array $args): Collection
+    {
+        return collect($args)->flatMap(
+            fn ($type) => ($type instanceof UnionType)
+                ? self::flattenUnion($type->types)
+                : [$type]
+        );
+    }
+
     public static function union(...$args): Contracts\Type
     {
-        $args = collect($args)->unique(fn ($type) => (string) $type)->values()->all();
+        $args = self::flattenUnion($args)
+            ->unique(fn ($type) => (string) $type)
+            ->values()
+            ->all();
 
         if (count($args) === 1) {
             return $args[0];
