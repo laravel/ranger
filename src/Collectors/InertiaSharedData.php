@@ -4,12 +4,10 @@ namespace Laravel\Ranger\Collectors;
 
 use Illuminate\Support\Collection;
 use Laravel\Ranger\Components\InertiaSharedData as SharedDataComponent;
-use Laravel\Ranger\Types\ArrayType;
-use Laravel\Ranger\Types\Type;
-use Laravel\Ranger\Types\UnionType;
-use Laravel\Ranger\Util\Parser;
-use Laravel\Ranger\Util\TypeResolver;
-use PhpParser\Node;
+use Laravel\Surveyor\Analyzer\Analyzer;
+use Laravel\Surveyor\Types\ArrayType;
+use Laravel\Surveyor\Types\Type;
+use Laravel\Surveyor\Types\UnionType;
 use ReflectionClass;
 use Spatie\StructureDiscoverer\Discover;
 
@@ -17,10 +15,8 @@ class InertiaSharedData extends Collector
 {
     protected array $parsed = [];
 
-    public function __construct(
-        protected Parser $parser,
-        protected TypeResolver $typeResolver,
-    ) {
+    public function __construct(protected Analyzer $analyzer)
+    {
         //
     }
 
@@ -34,34 +30,15 @@ class InertiaSharedData extends Collector
         )->map($this->processSharedData(...));
     }
 
-    // TODO: Figure this out...
-    // - `array`
-    // - `callable`
-    // - `bool`
-    // - `float`
-    // - `int`
-    // - `string`
-    // - `iterable`
-    // - `object`
-    // - `mixed`
-    protected function processSharedData(string $path): SharedDataComponent
+    protected function processSharedData(string $class): SharedDataComponent
     {
-        $reflected = new ReflectionClass($path);
-        $contents = file_get_contents($reflected->getFileName());
+        $result = $this->analyzer->analyze((new ReflectionClass($class))->getFileName())->result();
 
-        $this->parsed = $this->parser->parse($contents);
-
-        $node = $this->parser->nodeFinder()->findFirst(
-            $this->parsed,
-            fn ($node) => $node instanceof Node\Stmt\ClassMethod
-                && $node->name->name === 'share',
-        );
-
-        if (! $node) {
+        if (! $result->hasMethod('share')) {
             return new SharedDataComponent(new ArrayType([]));
         }
 
-        $data = $this->typeResolver->setParsed($this->parsed)->from($node);
+        $data = $result->getMethod('share')->returnType();
 
         if ($data instanceof UnionType) {
             $finalArray = [];

@@ -2,7 +2,7 @@
 
 namespace Laravel\Ranger\Components;
 
-use Laravel\Ranger\Types\ArrayType;
+use Laravel\Surveyor\Types\ArrayType;
 
 class InertiaSharedData
 {
