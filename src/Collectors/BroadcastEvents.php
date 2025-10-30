@@ -5,14 +5,16 @@ namespace Laravel\Ranger\Collectors;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Support\Collection;
 use Laravel\Ranger\Components\BroadcastEvent;
-use Laravel\Ranger\Util\Reflector;
+use Laravel\Surveyor\Analyzed\ClassResult;
+use Laravel\Surveyor\Analyzer\Analyzer;
+use Laravel\Surveyor\Types\ArrayType;
+use Laravel\Surveyor\Types\Contracts\Type;
 use ReflectionClass;
-use ReflectionProperty;
 use Spatie\StructureDiscoverer\Discover;
 
 class BroadcastEvents extends Collector
 {
-    public function __construct(protected Reflector $reflector)
+    public function __construct(protected Analyzer $analyzer)
     {
         //
     }
@@ -31,14 +33,32 @@ class BroadcastEvents extends Collector
 
     protected function toBroadcastEvent(string $class): BroadcastEvent
     {
-        // TODO: More robust + broadcastWith support
-        $reflected = new ReflectionClass($class);
+        $analyzed = $this->analyzer->analyze((new ReflectionClass($class))->getFileName())->result();
 
-        $publicProperties = collect($reflected->getProperties(ReflectionProperty::IS_PUBLIC))
-            ->mapWithKeys(fn ($property) => [
-                $property->getName() => $this->reflector->propertyType($reflected, $property->getName()),
-            ]);
+        $eventName = $this->resolveEventName($analyzed, $class);
+        $broadcastWith = $this->resolveBroadcastWith($analyzed);
 
-        return new BroadcastEvent($class, $publicProperties->toArray());
+        $event = new BroadcastEvent($eventName, $class, $broadcastWith);
+        $event->setFilePath($analyzed->filePath());
+
+        return $event;
+    }
+
+    protected function resolveEventName(ClassResult $analyzed, string $class): string
+    {
+        if ($analyzed->hasMethod('broadcastAs')) {
+            return $analyzed->getMethod('broadcastAs')->returnType()->value;
+        }
+
+        return $class;
+    }
+
+    protected function resolveBroadcastWith(ClassResult $analyzed): Type
+    {
+        if ($analyzed->hasMethod('broadcastWith')) {
+            return $analyzed->getMethod('broadcastWith')->returnType();
+        }
+
+        return new ArrayType($analyzed->publicProperties());
     }
 }
