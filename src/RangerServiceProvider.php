@@ -44,7 +44,7 @@ class RangerServiceProvider extends ServiceProvider
         //     'ranger'
         // );
 
-        $pharPath = __DIR__.'/../vendor/phpstan/phpstan/phpstan.phar';
+        $pharPath = base_path('vendor/phpstan/phpstan/phpstan.phar');
 
         if (! file_exists($pharPath)) {
             exit("PHPStan phar not found at: $pharPath\n");
