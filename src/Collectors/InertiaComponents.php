@@ -3,39 +3,38 @@
 namespace Laravel\Ranger\Collectors;
 
 use Laravel\Ranger\Components\InertiaResponse;
-use Laravel\Ranger\Types\ArrayType;
-use Laravel\Ranger\Types\Type;
-use Laravel\Ranger\Types\UnionType;
+use Laravel\Surveyor\Types\ArrayShapeType;
+use Laravel\Surveyor\Types\ArrayType;
+use Laravel\Surveyor\Types\CallableType;
+use Laravel\Surveyor\Types\Type;
+use Laravel\Surveyor\Types\UnionType;
 
 class InertiaComponents
 {
     protected static array $components = [];
 
-    public static function addComponent(string $component, array $data): void
+    public static function addComponent(string $component, ArrayType|ArrayShapeType $data): void
     {
-        if (isset(self::$components[$component])) {
-            self::$components[$component] = self::mergeComponentData(self::$components[$component], $data);
-        } else {
-            self::$components[$component] = $data;
+        if ($data instanceof ArrayShapeType) {
+            return;
         }
+
+        self::$components[$component] = self::mergeComponentData(
+            self::$components[$component] ?? [],
+            $data,
+        );
     }
 
     public static function getComponent(string $component): InertiaResponse
     {
-        return new InertiaResponse($component, self::$components[$component] ?? []);
+        $data = self::$components[$component] ?? [];
+
+        return new InertiaResponse($component, $data);
     }
 
-    protected static function mergeComponentData(array $existingData, array $data): mixed
+    protected static function mergeComponentData(array $existingData, ArrayType $data): array
     {
-        $newKeys = $data instanceof ArrayType
-            ? $data->keys()->all()
-            : array_keys($data);
-
-        $existingKeys = $existingData instanceof ArrayType
-            ? $existingData->keys()->all()
-            : array_keys($existingData);
-
-        $same = array_intersect($newKeys, $existingKeys);
+        $same = array_intersect($data->keys(), array_keys($existingData));
 
         foreach ($existingData as $key => $value) {
             if (! in_array($key, $same)) {
@@ -43,7 +42,7 @@ class InertiaComponents
             }
         }
 
-        foreach ($data as $key => $value) {
+        foreach ($data->value as $key => $value) {
             if (in_array($key, $same)) {
                 if (get_class($value) !== get_class($existingData[$key])) {
                     $value1 = $value instanceof UnionType ? $value->types : [$value];
@@ -56,12 +55,17 @@ class InertiaComponents
             }
 
             if ($value instanceof ArrayType) {
-                $existingData[$key] = (new ArrayType(
-                    self::mergeComponentData(
-                        $existingData[$key]->value ?? [],
-                        $value->value
-                    ),
-                ))->optional($value->isOptional());
+                $existingValue = $existingData[$key] ?? [];
+                $newValue = self::mergeComponentData(
+                    $existingValue instanceof ArrayType ? $existingValue->value : $existingValue,
+                    $value,
+                );
+
+                $existingData[$key] = (new ArrayType($newValue))->optional($value->isOptional());
+            }
+
+            if ($value instanceof CallableType) {
+                $existingData[$key] = $value->returnType;
             }
         }
 
