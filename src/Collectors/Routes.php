@@ -2,11 +2,13 @@
 
 namespace Laravel\Ranger\Collectors;
 
+use Closure;
 use Illuminate\Routing\Route as BaseRoute;
 use Illuminate\Routing\Router;
 use Illuminate\Routing\UrlGenerator;
 use Illuminate\Support\Collection;
 use Laravel\Ranger\Components\Route;
+use ReflectionClass;
 use ReflectionProperty;
 
 class Routes extends Collector
@@ -20,6 +22,8 @@ class Routes extends Collector
     public function __construct(
         private Router $router,
         private UrlGenerator $url,
+        protected Response $responseCollector,
+        protected FormRequests $formRequestCollector,
     ) {
         $this->forcedScheme = (new ReflectionProperty($this->url, 'forceScheme'))->getValue($this->url);
         $this->forcedRoot = (new ReflectionProperty($this->url, 'forcedRoot'))->getValue($this->url);
@@ -27,7 +31,9 @@ class Routes extends Collector
 
     public function collect(): Collection
     {
-        return collect($this->router->getRoutes())->map($this->mapToRoute(...))->map($this->resolveResponses(...));
+        return collect($this->router->getRoutes())
+            ->map($this->mapToRoute(...))
+            ->map($this->resolveResponses(...));
     }
 
     protected function resolveResponses(Route $route): Route
@@ -51,14 +57,19 @@ class Routes extends Collector
             ->map($this->collectMiddlewareDefaults(...))
             ->flatMap(fn ($r) => $r);
 
-        $component = new Route($route, $defaults, $this->forcedScheme, $this->forcedRoot);
+        $component = new Route(
+            $route,
+            $defaults,
+            $this->forcedScheme,
+            $this->forcedRoot,
+        );
 
-        if ($requestValidator = app(FormRequests::class)->parseRequest($route->getAction())) {
-            $component->setRequestValidator($requestValidator);
-        }
+        // if ($requestValidator = $this->formRequestCollector->parseRequest($route->getAction())) {
+        //     $component->setRequestValidator($requestValidator);
+        // }
 
         $component->setPossibleResponses(
-            app(Response::class)->parseResponse($route->getAction()),
+            $this->responseCollector->parseResponse($route->getAction()),
         );
 
         return $component;
@@ -66,7 +77,7 @@ class Routes extends Collector
 
     protected function collectMiddlewareDefaults($middleware): array
     {
-        if ($middleware instanceof \Closure) {
+        if ($middleware instanceof Closure) {
             return [];
         }
 
@@ -81,7 +92,7 @@ class Routes extends Collector
             return [];
         }
 
-        $reflection = new \ReflectionClass($middleware);
+        $reflection = new ReflectionClass($middleware);
 
         if (! $reflection->hasMethod('handle')) {
             return [];
