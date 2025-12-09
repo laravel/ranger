@@ -65,23 +65,6 @@ class Route
             : $this->base->getActionMethod();
     }
 
-    // public function jsMethod(): string
-    // {
-    //     return $this->finalJsMethod($this->originalJsMethod());
-    // }
-
-    // public function originalJsMethod()
-    // {
-    //     return $this->hasInvokableController()
-    //         ? Str::afterLast($this->controller(), '\\')
-    //         : $this->base->getActionMethod();
-    // }
-
-    // public function namedMethod(): string
-    // {
-    //     return $this->finalJsMethod(Str::afterLast($this->name(), '.'));
-    // }
-
     public function parameters(): Collection
     {
         return $this->parameters ??= $this->resolveParameters();
@@ -209,8 +192,6 @@ class Route
             ->when($this->domain() !== null, fn ($uri) => $uri->prepend("{$scheme}{$this->domain()}"))
             ->replace($defaultParams->keys()->toArray(), $defaultParams->values()->toArray())
             ->toString();
-
-        // return Js::from($uri, JSON_UNESCAPED_SLASHES)->toHtml();
     }
 
     protected function resolveParameters(): Collection
