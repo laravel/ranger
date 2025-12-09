@@ -3,9 +3,9 @@
 use App\Http\Controllers\InvokableController;
 use App\Http\Controllers\PostController;
 use Laravel\Ranger\Collectors\Routes;
-use Laravel\Ranger\Components\Parameter;
 use Laravel\Ranger\Components\Route;
 use Laravel\Ranger\Components\Verb;
+use Laravel\Ranger\Support\RouteParameter;
 
 beforeEach(function () {
     $this->collector = app(Routes::class);
@@ -118,7 +118,7 @@ describe('route parameters', function () {
         $params = $showRoute->parameters();
 
         expect($params)->toHaveCount(1);
-        expect($params->first())->toBeInstanceOf(Parameter::class);
+        expect($params->first())->toBeInstanceOf(RouteParameter::class);
         expect($params->first()->name)->toBe('post');
         expect($params->first()->optional)->toBeFalse();
     });
@@ -137,7 +137,7 @@ describe('route parameters', function () {
         $params = $manyOptionalRoute->parameters();
 
         expect($params)->toHaveCount(3);
-        expect($params->every(fn (Parameter $p) => $p->optional))->toBeTrue();
+        expect($params->every(fn (RouteParameter $p) => $p->optional))->toBeTrue();
     });
 
     it('captures parameter placeholders', function () {
@@ -161,7 +161,7 @@ describe('URL defaults from middleware', function () {
             fn (Route $r) => str_contains($r->uri(), 'with-defaults') && ! str_contains($r->uri(), 'also')
         );
         $params = $defaultsRoute->parameters();
-        $localeParam = $params->first(fn (Parameter $p) => $p->name === 'locale');
+        $localeParam = $params->first(fn (RouteParameter $p) => $p->name === 'locale');
 
         expect($localeParam->optional)->toBeTrue();
         expect($localeParam->default)->toBe('en');
@@ -171,8 +171,8 @@ describe('URL defaults from middleware', function () {
         $mixedRoute = $this->routes->first(fn (Route $r) => str_contains($r->uri(), 'also'));
         $params = $mixedRoute->parameters();
 
-        $localeParam = $params->first(fn (Parameter $p) => $p->name === 'locale');
-        $timezoneParam = $params->first(fn (Parameter $p) => $p->name === 'timezone');
+        $localeParam = $params->first(fn (RouteParameter $p) => $p->name === 'locale');
+        $timezoneParam = $params->first(fn (RouteParameter $p) => $p->name === 'timezone');
 
         expect($localeParam->optional)->toBeTrue();
         expect($timezoneParam->optional)->toBeFalse();
