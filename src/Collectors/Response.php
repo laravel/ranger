@@ -15,12 +15,14 @@ class Response
 {
     use AnalyzesRoutes;
 
-    public function __construct(
-        protected Analyzer $analyzer,
-    ) {
+    public function __construct(protected Analyzer $analyzer)
+    {
         //
     }
 
+    /**
+     * @return list<InertiaResponse|JsonResponse>
+     */
     public function parseResponse(array $action): array
     {
         $result = $this->analyzeRoute($action);
@@ -38,7 +40,10 @@ class Response
     protected function getInertiaResponse(MethodResult $result): array
     {
         /** @var InertiaRender[] $responses */
-        $responses = $this->filterReturnTypesFor($result, fn ($type) => $type instanceof InertiaRender);
+        $responses = $this->filterReturnTypesFor(
+            $result,
+            fn ($type) => $type instanceof InertiaRender,
+        );
 
         foreach ($responses as $response) {
             InertiaComponents::addComponent($response->view, $response->data);
@@ -50,7 +55,10 @@ class Response
     protected function getJsonResponse(MethodResult $result): array
     {
         /** @var ArrayType[] $responses */
-        $responses = $this->filterReturnTypesFor($result, fn ($type) => $type instanceof ArrayType);
+        $responses = $this->filterReturnTypesFor(
+            $result,
+            fn ($type) => $type instanceof ArrayType,
+        );
 
         return array_map(fn ($response) => new JsonResponse($response->value), $responses);
     }

@@ -16,7 +16,7 @@ class FormRequests
         //
     }
 
-    public function parseRequest(array $action): ?Validator
+    public function getValidator(array $action): ?Validator
     {
         $result = $this->analyzeRoute($action);
 

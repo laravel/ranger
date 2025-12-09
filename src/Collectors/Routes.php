@@ -13,28 +13,36 @@ use ReflectionProperty;
 
 class Routes extends Collector
 {
-    private ?string $forcedScheme;
+    protected ?string $forcedScheme;
 
-    private ?string $forcedRoot;
+    protected ?string $forcedRoot;
 
-    private $urlDefaults = [];
+    protected $urlDefaults = [];
 
     public function __construct(
-        private Router $router,
-        private UrlGenerator $url,
+        protected Router $router,
+        protected UrlGenerator $url,
         protected Response $responseCollector,
         protected FormRequests $formRequestCollector,
     ) {
-        $this->forcedScheme = (new ReflectionProperty($this->url, 'forceScheme'))->getValue($this->url);
-        $this->forcedRoot = (new ReflectionProperty($this->url, 'forcedRoot'))->getValue($this->url);
+        $this->forcedScheme = $this->getUrlGeneratorProp('forceScheme');
+        $this->forcedRoot = $this->getUrlGeneratorProp('forcedRoot');
     }
 
+    /**
+     * @return Collection<Route>
+     */
     public function collect(): Collection
     {
         return collect($this->router->getRoutes())
             ->filter($this->filterRoute(...))
             ->map($this->mapToRoute(...))
             ->map($this->resolveResponses(...));
+    }
+
+    protected function getUrlGeneratorProp(string $prop): mixed
+    {
+        return (new ReflectionProperty($this->url, $prop))->getValue($this->url);
     }
 
     protected function filterRoute(BaseRoute $route): bool
@@ -62,7 +70,7 @@ class Routes extends Collector
 
         $component = new Route($route, $defaults, $this->forcedScheme, $this->forcedRoot);
 
-        if ($requestValidator = $this->formRequestCollector->parseRequest($route->getAction())) {
+        if ($requestValidator = $this->formRequestCollector->getValidator($route->getAction())) {
             $component->setRequestValidator($requestValidator);
         }
 
@@ -79,12 +87,10 @@ class Routes extends Collector
             return [];
         }
 
-        $this->urlDefaults[$middleware] ??= $this->getDefaultsForMiddleware($middleware);
-
-        return $this->urlDefaults[$middleware];
+        return $this->urlDefaults[$middleware] ??= $this->getDefaultsForMiddleware($middleware);
     }
 
-    private function getDefaultsForMiddleware(string $middleware)
+    protected function getDefaultsForMiddleware(string $middleware)
     {
         if (! class_exists($middleware)) {
             return [];
