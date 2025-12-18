@@ -14,7 +14,13 @@ trait AnalyzesRoutes
             return null;
         }
 
-        [$controller, $method] = explode('@', $action['uses']);
+        $uses = @unserialize($action['uses']) ?: $action['uses'];
+
+        if (! is_string($uses)) {
+            return null;
+        }
+
+        [$controller, $method] = explode('@', $uses);
         $analyzed = $this->analyzer->analyzeClass($controller)->result();
 
         if (! $analyzed->hasMethod($method)) {
