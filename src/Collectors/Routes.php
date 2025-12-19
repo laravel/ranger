@@ -8,7 +8,9 @@ use Illuminate\Routing\Router;
 use Illuminate\Routing\UrlGenerator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use Laravel\Ranger\Components\Route;
+use Laravel\Ranger\Support\Config;
 use ReflectionClass;
 use ReflectionProperty;
 use Spatie\StructureDiscoverer\Discover;
@@ -23,6 +25,10 @@ class Routes extends Collector
 
     protected $universalUrlDefaults = [];
 
+    protected array $ignoreNames = [];
+
+    protected array $ignoreUrls = [];
+
     public function __construct(
         protected Router $router,
         protected UrlGenerator $url,
@@ -31,6 +37,8 @@ class Routes extends Collector
     ) {
         $this->forcedScheme = $this->getUrlGeneratorProp('forceScheme');
         $this->forcedRoot = $this->getUrlGeneratorProp('forcedRoot');
+        $this->ignoreNames = Config::get('routes.ignore_names', []);
+        $this->ignoreUrls = Config::get('routes.ignore_urls', []);
     }
 
     /**
@@ -69,7 +77,11 @@ class Routes extends Collector
 
     protected function filterRoute(BaseRoute $route): bool
     {
-        return ! str_starts_with($route->getName() ?? '', 'nova.');
+        if ($route->getName() && count($this->ignoreNames) > 0 && Str::is($this->ignoreNames, $route->getName())) {
+            return false;
+        }
+
+        return count($this->ignoreUrls) === 0 || ! Str::is($this->ignoreUrls, $route->uri());
     }
 
     protected function resolveResponses(Route $route): Route
