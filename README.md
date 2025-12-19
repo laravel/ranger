@@ -1,5 +1,3 @@
-<!-- <p align="center"><img src="/art/logo.svg" alt="Laravel Ranger"></p> -->
-
 <p align="center">
 <a href="https://github.com/laravel/ranger/actions"><img src="https://github.com/laravel/ranger/workflows/tests/badge.svg" alt="Build Status"></a>
 <a href="https://packagist.org/packages/laravel/ranger"><img src="https://img.shields.io/packagist/dt/laravel/ranger" alt="Total Downloads"></a>
@@ -86,7 +84,7 @@ In order to ensure that the Laravel community is welcoming to all, please review
 
 ## Security Vulnerabilities
 
-Please review [our security policy](https://github.com/laravel/envoy/security/policy) on how to report security vulnerabilities.
+Please review [our security policy](https://github.com/laravel/ranger/security/policy) on how to report security vulnerabilities.
 
 ## License
 
