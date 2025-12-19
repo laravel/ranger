@@ -22,26 +22,24 @@ jobs:
         php: [8.2, 8.3, 8.4]
         laravel: [11, 12]
 
-    if: false
-
     name: PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          extensions: dom, curl, libxml, mbstring, zip
-          ini-values: error_reporting=E_ALL
-          tools: composer:v2
-          coverage: none
+    #   - name: Setup PHP
+    #     uses: shivammathur/setup-php@v2
+    #     with:
+    #       php-version: ${{ matrix.php }}
+    #       extensions: dom, curl, libxml, mbstring, zip
+    #       ini-values: error_reporting=E_ALL
+    #       tools: composer:v2
+    #       coverage: none
 
-      - name: Install dependencies
-        run: |
-          composer update --prefer-dist --no-interaction --no-progress --with="illuminate/contracts:^${{ matrix.laravel }}"
+    #   - name: Install dependencies
+    #     run: |
+    #       composer update --prefer-dist --no-interaction --no-progress --with="illuminate/contracts:^${{ matrix.laravel }}"
 
-      - name: Execute tests
-        run: vendor/bin/pest
+    #   - name: Execute tests
+    #     run: vendor/bin/pest
