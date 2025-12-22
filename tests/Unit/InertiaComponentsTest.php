@@ -21,6 +21,10 @@ describe('InertiaComponents static class', function () {
 
         expect($component)->toBeInstanceOf(InertiaResponse::class);
         expect($component->component)->toBe('Dashboard');
+        expect($component->data)->toBeArray();
+        expect($component->data)->toHaveKey('title');
+        expect($component->data['title'])->toBeInstanceOf(StringType::class);
+        expect($component->data['title']->isOptional())->toBeFalse();
     });
 
     it('returns empty data for non-existent components', function () {
@@ -42,5 +46,7 @@ describe('InertiaComponents static class', function () {
 
         expect($component->data)->toHaveKey('title');
         expect($component->data)->toHaveKey('count');
+        expect($component->data['title']->isOptional())->toBeTrue();
+        expect($component->data['count']->isOptional())->toBeTrue();
     });
 });

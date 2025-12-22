@@ -38,6 +38,10 @@ class InertiaComponents
 
     protected static function mergeComponentData(array $existingData, ArrayType $data): array
     {
+        if (count($existingData) === 0) {
+            return $data->value;
+        }
+
         $same = array_intersect($data->keys(), array_keys($existingData));
 
         foreach ($existingData as $key => $value) {
