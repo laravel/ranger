@@ -12,7 +12,7 @@ use Laravel\Ranger\Ranger;
 beforeEach(function () {
     Broadcast::channel('test.channel', fn () => true);
 
-    $this->ranger = new Ranger;
+    $this->ranger = app(Ranger::class);
 });
 
 describe('route callbacks', function () {
