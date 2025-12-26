@@ -14,11 +14,13 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Laravel\Ranger\Components\Model as ModelComponent;
 use Laravel\Surveyor\Analyzer\Analyzer;
 use Laravel\Surveyor\Types\ArrayType;
 use Laravel\Surveyor\Types\ClassType;
 use Laravel\Surveyor\Types\Contracts\Type as SurveyorTypeContract;
+use Laravel\Surveyor\Types\StringType;
 use Laravel\Surveyor\Types\Type;
 use Spatie\StructureDiscoverer\Discover;
 
@@ -71,6 +73,16 @@ class Models extends Collector
 
         $modelComponent = new ModelComponent($model);
 
+        $eagerLoadRelations = [];
+
+        if ($result->hasProperty('with') && $result->getProperty('with')->type instanceof ArrayType) {
+            foreach ($result->getProperty('with')->type->value as $relation) {
+                if ($relation instanceof StringType) {
+                    $eagerLoadRelations[] = $relation->value;
+                }
+            }
+        }
+
         $this->modelComponents->offsetSet($modelComponent->name, $modelComponent);
 
         foreach ($result->publicProperties() as $property) {
@@ -81,7 +93,11 @@ class Models extends Collector
 
         foreach ($result->publicMethods() as $method) {
             if ($method->isModelRelation()) {
-                $returnType = $this->resolveReturnType($method->returnType());
+                $returnType = $this->resolveReturnType(
+                    $method->returnType(),
+                    in_array($method->name(), $eagerLoadRelations)
+                        || in_array(Str::snake($method->name()), $eagerLoadRelations),
+                );
 
                 if ($returnType === null) {
                     continue;
@@ -92,7 +108,7 @@ class Models extends Collector
         }
     }
 
-    protected function resolveReturnType(SurveyorTypeContract $type): ?SurveyorTypeContract
+    protected function resolveReturnType(SurveyorTypeContract $type, bool $required): ?SurveyorTypeContract
     {
         if (! $type instanceof ClassType) {
             return null;
@@ -117,7 +133,7 @@ class Models extends Collector
         ];
 
         if (in_array($type->value, $collectionRelations)) {
-            return (new ArrayType([$relatedModel]))->optional();
+            return (new ArrayType([$relatedModel]))->required($required);
         }
 
         $maybeCollectionRelation = [
@@ -127,9 +143,9 @@ class Models extends Collector
         ];
 
         if (in_array($type->value, $maybeCollectionRelation)) {
-            return Type::union(new ClassType($type->value), new ArrayType([$relatedModel]))->nullable()->optional();
+            return Type::union(new ClassType($type->value), new ArrayType([$relatedModel]))->nullable()->required($required);
         }
 
-        return $relatedModel->nullable()->optional();
+        return $relatedModel->nullable()->required($required);
     }
 }
