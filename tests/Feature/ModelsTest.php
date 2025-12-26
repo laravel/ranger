@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\ApiResponse;
+use App\Models\Comment;
 use App\Models\Post;
 use App\Models\User;
 use Laravel\Ranger\Collectors\Models;
@@ -121,5 +123,53 @@ describe('model lookup', function () {
         $result = $this->collector->get('NonExistent\\Model');
 
         expect($result)->toBeNull();
+    });
+});
+
+describe('eager loading', function () {
+    it('marks eager loaded relations as required', function () {
+        $models = $this->collector->collect();
+        $commentModel = $models->first(fn (Model $m) => $m->name === Comment::class);
+
+        $relations = $commentModel->getRelations();
+
+        expect($relations)->toHaveKey('post');
+        expect($relations['post']->required)->toBeTrue();
+    });
+
+    it('marks non-eager loaded relations as not required', function () {
+        $models = $this->collector->collect();
+        $postModel = $models->first(fn (Model $m) => $m->name === Post::class);
+
+        $relations = $postModel->getRelations();
+
+        expect($relations)->toHaveKey('user');
+        expect($relations['user']->required)->toBeFalse();
+    });
+
+    it('matches eager load relations using snake_case version of method name', function () {
+        $models = $this->collector->collect();
+        $commentModel = $models->first(fn (Model $m) => $m->name === Comment::class);
+
+        $relations = $commentModel->getRelations();
+
+        expect($relations)->toHaveKey('authoredBy');
+        expect($relations['authoredBy']->required)->toBeTrue();
+    });
+});
+
+describe('snake case attributes', function () {
+    it('defaults to snake casing attributes', function () {
+        $models = $this->collector->collect();
+        $userModel = $models->first(fn (Model $m) => $m->name === User::class);
+
+        expect($userModel->snakeCaseAttributes())->toBeTrue();
+    });
+
+    it('respects models that disable snake casing', function () {
+        $models = $this->collector->collect();
+        $apiResponseModel = $models->first(fn (Model $m) => $m->name === ApiResponse::class);
+
+        expect($apiResponseModel->snakeCaseAttributes())->toBeFalse();
     });
 });
