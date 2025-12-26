@@ -16,9 +16,21 @@ class Model
      */
     protected array $relations = [];
 
+    protected bool $snakeCaseAttributes = true;
+
     public function __construct(public readonly string $name)
     {
         //
+    }
+
+    public function setSnakeCaseAttributes(bool $snakeCaseAttributes): void
+    {
+        $this->snakeCaseAttributes = $snakeCaseAttributes;
+    }
+
+    public function snakeCaseAttributes(): bool
+    {
+        return $this->snakeCaseAttributes;
     }
 
     /**

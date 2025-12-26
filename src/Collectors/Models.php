@@ -13,12 +13,14 @@ use Illuminate\Database\Eloquent\Relations\MorphOneOrMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Foundation\Auth\User;
+use Illuminate\JsonSchema\Types\BooleanType;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Laravel\Ranger\Components\Model as ModelComponent;
 use Laravel\Surveyor\Analyzed\ClassResult;
 use Laravel\Surveyor\Analyzer\Analyzer;
 use Laravel\Surveyor\Types\ArrayType;
+use Laravel\Surveyor\Types\BoolType;
 use Laravel\Surveyor\Types\ClassType;
 use Laravel\Surveyor\Types\Contracts\Type as SurveyorTypeContract;
 use Laravel\Surveyor\Types\StringType;
@@ -57,7 +59,7 @@ class Models extends Collector
     public function get(string $model): ?ModelComponent
     {
         return $this->getCollection()->first(
-            fn (ModelComponent $component) => $component->name === $model,
+            fn(ModelComponent $component) => $component->name === $model,
         );
     }
 
@@ -75,6 +77,7 @@ class Models extends Collector
         $modelComponent = new ModelComponent($model);
 
         $eagerLoadRelations = $this->gatherEagerLoadRelations($result);
+        $modelComponent->setSnakeCaseAttributes($this->shouldSnakeCase($result));
 
         $this->modelComponents->offsetSet($modelComponent->name, $modelComponent);
 
@@ -103,19 +106,32 @@ class Models extends Collector
 
     protected function gatherEagerLoadRelations(ClassResult $result): array
     {
-        if (! $result->hasProperty('with') || ! $result->getProperty('with')->type instanceof ArrayType) {
+        $propertyName = 'with';
+
+        if (! $result->hasProperty($propertyName) || ! $result->getProperty($propertyName)->type instanceof ArrayType) {
             return [];
         }
 
         $eagerLoadRelations = [];
 
-        foreach ($result->getProperty('with')->type->value as $relation) {
+        foreach ($result->getProperty($propertyName)->type->value as $relation) {
             if ($relation instanceof StringType) {
                 $eagerLoadRelations[] = $relation->value;
             }
         }
 
         return $eagerLoadRelations;
+    }
+
+    protected function shouldSnakeCase(ClassResult $result): bool
+    {
+        $propertyName = 'snakeAttributes';
+
+        if (! $result->hasProperty($propertyName) || !$result->getProperty($propertyName)->type instanceof BoolType) {
+            return true;
+        }
+
+        return $result->getProperty($propertyName)->type->value;
     }
 
     protected function resolveReturnType(SurveyorTypeContract $type, bool $required): ?SurveyorTypeContract
