@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Relations\MorphOneOrMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Foundation\Auth\User;
-use Illuminate\JsonSchema\Types\BooleanType;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Laravel\Ranger\Components\Model as ModelComponent;
@@ -59,7 +58,7 @@ class Models extends Collector
     public function get(string $model): ?ModelComponent
     {
         return $this->getCollection()->first(
-            fn(ModelComponent $component) => $component->name === $model,
+            fn (ModelComponent $component) => $component->name === $model,
         );
     }
 
@@ -127,7 +126,7 @@ class Models extends Collector
     {
         $propertyName = 'snakeAttributes';
 
-        if (! $result->hasProperty($propertyName) || !$result->getProperty($propertyName)->type instanceof BoolType) {
+        if (! $result->hasProperty($propertyName) || ! $result->getProperty($propertyName)->type instanceof BoolType) {
             return true;
         }
 
