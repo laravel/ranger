@@ -1,6 +1,14 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/ranger/compare/v0.1.3...main)
+## [Unreleased](https://github.com/laravel/ranger/compare/v0.1.4...main)
+
+## [v0.1.4](https://github.com/laravel/ranger/compare/v0.1.3...v0.1.4) - 2025-12-29
+
+### What's Changed
+
+* Fix environment variable parsing for base paths specifically by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/ranger/pull/8
+
+**Full Changelog**: https://github.com/laravel/ranger/compare/v0.1.3...v0.1.4
 
 ## [v0.1.3](https://github.com/laravel/ranger/compare/v0.1.2...v0.1.3) - 2025-12-26
 
