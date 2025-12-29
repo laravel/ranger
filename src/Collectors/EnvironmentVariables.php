@@ -2,6 +2,8 @@
 
 namespace Laravel\Ranger\Collectors;
 
+use Dotenv\Dotenv;
+use Dotenv\Exception\InvalidFileException;
 use Illuminate\Support\Collection;
 use Laravel\Ranger\Components\EnvironmentVariable;
 
@@ -21,30 +23,33 @@ class EnvironmentVariables extends Collector
                 continue;
             }
 
-            $envFile = file_get_contents($envPath);
+            try {
+                $variables = Dotenv::parse(file_get_contents($envPath));
+            } catch (InvalidFileException $e) {
+                continue;
+            }
 
-            return collect($_ENV)
-                ->filter(fn ($_, $key) => preg_match('/^'.$key.'=/m  ', $envFile) === 1)
-                ->map(fn ($_, $key) => $this->toComponent($key))
+            return collect($variables)
+                ->map(fn ($value, $key) => $this->toComponent($key, $value))
                 ->values();
         }
 
         return collect();
     }
 
-    protected function toComponent(string $envKey): EnvironmentVariable
+    protected function toComponent(string $key, mixed $value): EnvironmentVariable
     {
-        return new EnvironmentVariable($envKey, $this->resolveValue(env($envKey)));
+        return new EnvironmentVariable($key, $this->resolveValue($value));
     }
 
     protected function resolveValue(mixed $value): mixed
     {
-        if (is_float($value)) {
-            return (float) $value;
+        if ($value === '' || $value === null) {
+            return null;
         }
 
         if (is_numeric($value)) {
-            return (int) $value;
+            return str_contains((string) $value, '.') ? (float) $value : (int) $value;
         }
 
         return $value;
