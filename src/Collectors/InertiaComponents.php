@@ -19,11 +19,9 @@ class InertiaComponents
 
     public static function addComponent(string $component, ArrayType|ArrayShapeType $data): void
     {
-        if ($data instanceof ArrayShapeType) {
-            return;
-        }
+        $data = $data instanceof ArrayShapeType ? new ArrayType([]) : $data;
 
-        self::$components[$component] = self::mergeComponentData(self::getComponentData($component), $data);
+        self::$components[$component] = self::mergeComponentData($component, self::getComponentData($component), $data);
     }
 
     public static function getComponent(string $component): InertiaResponse
@@ -36,9 +34,14 @@ class InertiaComponents
         return self::$components[$component] ?? [];
     }
 
-    protected static function mergeComponentData(array $existingData, ArrayType $data): array
+    protected static function hasComponent(string $component): bool
     {
-        if (count($existingData) === 0) {
+        return isset(self::$components[$component]);
+    }
+
+    protected static function mergeComponentData(string $component, array $existingData, ArrayType $data): array
+    {
+        if (! self::hasComponent($component)) {
             return $data->value;
         }
 
@@ -69,6 +72,7 @@ class InertiaComponents
             if ($value instanceof ArrayType) {
                 $existingValue = $existingData[$key] ?? [];
                 $newValue = self::mergeComponentData(
+                    $component,
                     $existingValue instanceof ArrayType ? $existingValue->value : $existingValue,
                     $value,
                 );
