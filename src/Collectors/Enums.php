@@ -2,6 +2,7 @@
 
 namespace Laravel\Ranger\Collectors;
 
+use BackedEnum;
 use Illuminate\Support\Collection;
 use Laravel\Ranger\Components\Enum as EnumComponent;
 use ReflectionClass;
@@ -19,12 +20,12 @@ class Enums extends Collector
     }
 
     /**
-     * @param  class-string<\BackedEnum>  $enum
+     * @param  class-string<\BackedEnum|\UnitEnum>  $enum
      */
     protected function toComponent(string $enum): EnumComponent
     {
         $cases = collect($enum::cases())
-            ->mapWithKeys(fn ($case) => [$case->name => $case->value])
+            ->mapWithKeys(fn ($case) => [$case->name => $case instanceof BackedEnum ? $case->value : null])
             ->all();
 
         $component = new EnumComponent($enum, $cases);

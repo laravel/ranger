@@ -1,6 +1,8 @@
 <?php
 
+use App\Enums\NumericEnum;
 use App\Enums\Status;
+use App\Enums\UnitEnum;
 use App\Enums\UserRole;
 use Laravel\Ranger\Collectors\Enums;
 use Laravel\Ranger\Components\Enum;
@@ -12,7 +14,7 @@ beforeEach(function () {
 it('collects all enums from the application', function () {
     $enums = $this->collector->collect();
 
-    expect($enums)->toHaveCount(2);
+    expect($enums)->toHaveCount(4);
     expect($enums->pluck('name')->toArray())->toContain(Status::class, UserRole::class);
 });
 
@@ -56,6 +58,30 @@ it('captures user role enum cases correctly', function () {
         'GUEST' => 'guest',
         'EDITOR' => 'editor',
         'VIEWER' => 'viewer',
+    ]);
+});
+
+it('captures numeric enum cases correctly', function () {
+    $enums = $this->collector->collect();
+
+    $userRole = $enums->first(fn (Enum $e) => $e->name === NumericEnum::class);
+
+    expect($userRole->cases)->toHaveCount(2);
+    expect($userRole->cases)->toMatchArray([
+        'ONE' => 1,
+        'TWO' => 2,
+    ]);
+});
+
+it('captures unit enum cases correctly', function () {
+    $enums = $this->collector->collect();
+
+    $userRole = $enums->first(fn (Enum $e) => $e->name === UnitEnum::class);
+
+    expect($userRole->cases)->toHaveCount(2);
+    expect($userRole->cases)->toMatchArray([
+        'BAR' => null,
+        'FOO' => null,
     ]);
 });
 
