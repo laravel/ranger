@@ -187,14 +187,14 @@ class Route
                 return '[serialized-closure]';
             }
 
-            return $path;
+            return str_replace(base_path(), '', $path);
         }
 
         if (! class_exists($controller)) {
             return '[unknown]';
         }
 
-        return (new ReflectionClass($controller))->getFileName();
+        return str_replace(base_path(), '', (new ReflectionClass($controller))->getFileName());
     }
 
     protected function resolveUri(): string
