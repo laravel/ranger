@@ -25,7 +25,7 @@ class Enums extends Collector
     protected function toComponent(string $enum): EnumComponent
     {
         $cases = collect($enum::cases())
-            ->mapWithKeys(fn ($case) => [$case->name => $case instanceof BackedEnum ? $case->value : null])
+            ->mapWithKeys(fn ($case, $index) => [$case->name => $case instanceof BackedEnum ? $case->value : (int) $index])
             ->all();
 
         $component = new EnumComponent($enum, $cases);

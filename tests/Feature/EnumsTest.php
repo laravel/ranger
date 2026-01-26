@@ -80,8 +80,8 @@ it('captures unit enum cases correctly', function () {
 
     expect($userRole->cases)->toHaveCount(2);
     expect($userRole->cases)->toMatchArray([
-        'BAR' => null,
-        'FOO' => null,
+        'BAR' => 0,
+        'FOO' => 1,
     ]);
 });
 
