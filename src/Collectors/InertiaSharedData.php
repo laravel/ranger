@@ -3,6 +3,7 @@
 namespace Laravel\Ranger\Collectors;
 
 use Illuminate\Support\Collection;
+use Inertia\Middleware;
 use Laravel\Ranger\Components\InertiaSharedData as SharedDataComponent;
 use Laravel\Surveyor\Analyzer\Analyzer;
 use Laravel\Surveyor\Types\ArrayType;
@@ -32,7 +33,7 @@ class InertiaSharedData extends Collector
     }
 
     /**
-     * @param  class-string<\Inertia\Middleware>  $class
+     * @param  class-string<Middleware>  $class
      */
     protected function processSharedData(string $class): SharedDataComponent
     {

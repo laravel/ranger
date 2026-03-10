@@ -20,7 +20,7 @@ class Enums extends Collector
     }
 
     /**
-     * @param  class-string<\BackedEnum|\UnitEnum>  $enum
+     * @param  class-string<BackedEnum|\UnitEnum>  $enum
      */
     protected function toComponent(string $enum): EnumComponent
     {
