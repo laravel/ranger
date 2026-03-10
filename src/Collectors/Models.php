@@ -53,7 +53,7 @@ class Models extends Collector
     }
 
     /**
-     * @param  class-string<\Illuminate\Database\Eloquent\Model>  $model
+     * @param  class-string<Model>  $model
      */
     public function get(string $model): ?ModelComponent
     {
@@ -63,7 +63,7 @@ class Models extends Collector
     }
 
     /**
-     * @param  class-string<\Illuminate\Database\Eloquent\Model>  $model
+     * @param  class-string<Model>  $model
      */
     protected function toComponent(string $model): void
     {

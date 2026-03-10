@@ -50,7 +50,7 @@ class InertiaController extends Controller
 
     public function withVariable(Request $request)
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = $request->user();
 
         return Inertia::render('Posts/Variable', [
