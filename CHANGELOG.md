@@ -1,6 +1,11 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/ranger/compare/v0.1.8...main)
+## [Unreleased](https://github.com/laravel/ranger/compare/v0.1.9...main)
+
+## [v0.1.9](https://github.com/laravel/ranger/compare/v0.1.8...v0.1.9) - 2026-03-17
+
+* Makes imports consistent by [@nunomaduro](https://github.com/nunomaduro) in https://github.com/laravel/ranger/pull/21
+* Add Laravel 13 support by [@pascalbaljet](https://github.com/pascalbaljet) in https://github.com/laravel/ranger/pull/22
 
 ## [v0.1.8](https://github.com/laravel/ranger/compare/v0.1.7...v0.1.8) - 2026-01-27
 
