@@ -4,12 +4,14 @@ namespace Laravel\Ranger\Collectors;
 
 use Closure;
 use Laravel\Ranger\Components\JsonResponse;
+use Laravel\Ranger\Components\ResourceResponse;
 use Laravel\Ranger\Support\AnalyzesRoutes;
 use Laravel\Surveyor\Analyzed\MethodResult;
 use Laravel\Surveyor\Analyzer\Analyzer;
 use Laravel\Surveyor\Types\ArrayType;
 use Laravel\Surveyor\Types\Contracts\MultiType;
 use Laravel\Surveyor\Types\Entities\InertiaRender;
+use Laravel\Surveyor\Types\Entities\ResourceResponse as SurveyorResourceResponse;
 
 class Response
 {
@@ -34,6 +36,7 @@ class Response
         return array_merge(
             $this->getInertiaResponse($result),
             $this->getJsonResponse($result),
+            $this->getResourceResponse($result),
         );
     }
 
@@ -61,6 +64,23 @@ class Response
         );
 
         return array_map(fn ($response) => new JsonResponse($response->value), $responses);
+    }
+
+    protected function getResourceResponse(MethodResult $result): array
+    {
+        /** @var SurveyorResourceResponse[] $responses */
+        $responses = $this->filterReturnTypesFor(
+            $result,
+            fn ($type) => $type instanceof SurveyorResourceResponse,
+        );
+
+        return array_map(fn ($response) => new ResourceResponse(
+            resourceClass: $response->resourceClass,
+            data: $response->data instanceof ArrayType ? $response->data->value : [],
+            isCollection: $response->isCollection,
+            wrap: $response->wrap,
+            additional: $response->additional instanceof ArrayType ? $response->additional->value : [],
+        ), $responses);
     }
 
     protected function filterReturnTypesFor(MethodResult $result, Closure $filter): array
