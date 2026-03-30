@@ -3,6 +3,7 @@
 namespace Laravel\Ranger\Collectors;
 
 use Closure;
+use Laravel\Ranger\Components\JsonApiResponse;
 use Laravel\Ranger\Components\JsonResponse;
 use Laravel\Ranger\Components\ResourceResponse;
 use Laravel\Ranger\Support\AnalyzesRoutes;
@@ -11,6 +12,7 @@ use Laravel\Surveyor\Analyzer\Analyzer;
 use Laravel\Surveyor\Types\ArrayType;
 use Laravel\Surveyor\Types\Contracts\MultiType;
 use Laravel\Surveyor\Types\Entities\InertiaRender;
+use Laravel\Surveyor\Types\Entities\JsonApiResourceResponse as SurveyorJsonApiResourceResponse;
 use Laravel\Surveyor\Types\Entities\ResourceResponse as SurveyorResourceResponse;
 
 class Response
@@ -37,6 +39,7 @@ class Response
             $this->getInertiaResponse($result),
             $this->getJsonResponse($result),
             $this->getResourceResponse($result),
+            $this->getJsonApiResponse($result),
         );
     }
 
@@ -80,6 +83,24 @@ class Response
             isCollection: $response->isCollection,
             wrap: $response->wrap,
             additional: $response->additional instanceof ArrayType ? $response->additional->value : [],
+        ), $responses);
+    }
+
+    protected function getJsonApiResponse(MethodResult $result): array
+    {
+        /** @var SurveyorJsonApiResourceResponse[] $responses */
+        $responses = $this->filterReturnTypesFor(
+            $result,
+            fn ($type) => $type instanceof SurveyorJsonApiResourceResponse,
+        );
+
+        return array_map(fn ($response) => new JsonApiResponse(
+            resourceClass: $response->resourceClass,
+            attributes: $response->attributes instanceof ArrayType ? $response->attributes->value : [],
+            relationships: $response->relationships instanceof ArrayType ? $response->relationships->value : [],
+            links: $response->links instanceof ArrayType ? $response->links->value : [],
+            meta: $response->meta instanceof ArrayType ? $response->meta->value : [],
+            isCollection: $response->isCollection,
         ), $responses);
     }
 
