@@ -1,6 +1,15 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/ranger/compare/v0.1.9...main)
+## [Unreleased](https://github.com/laravel/ranger/compare/v0.1.10...main)
+
+## [v0.1.10](https://github.com/laravel/ranger/compare/v0.1.9...v0.1.10) - 2026-04-07
+
+### What's Changed
+
+* Respect app URL base path by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/ranger/pull/24
+* Fix model binding key resolution for camelCase route parameters by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/ranger/pull/25
+
+**Full Changelog**: https://github.com/laravel/ranger/compare/v0.1.9...v0.1.10
 
 ## [v0.1.9](https://github.com/laravel/ranger/compare/v0.1.8...v0.1.9) - 2026-03-17
 
