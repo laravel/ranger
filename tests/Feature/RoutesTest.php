@@ -258,6 +258,42 @@ describe('controller method line numbers', function () {
     });
 });
 
+describe('APP_URL base path and port resolution', function () {
+    it('prefixes URIs with APP_URL base path', function () {
+        app('url')->forceRootUrl('http://localhost:8081/v2');
+        app()->forgetInstance(Routes::class);
+
+        $routes = app(Routes::class)->collect();
+        $postsRoute = $routes->first(fn (Route $r) => $r->name() === 'posts.index');
+
+        expect($postsRoute->uri())->toContain('/v2/posts');
+        expect($postsRoute->uri())->toBe('http://localhost:8081/v2/posts');
+    });
+
+    it('appends APP_URL port to domain routes without a port', function () {
+        app('url')->forceRootUrl('https://localhost:8001');
+        app()->forgetInstance(Routes::class);
+
+        $routes = app(Routes::class)->collect();
+
+        $fixedDomainRoute = $routes->first(fn (Route $r) => str_contains($r->uri(), 'fixed-domain'));
+        $defaultDomainRoute = $routes->first(fn (Route $r) => str_contains($r->uri(), 'default-parameters-domain'));
+
+        expect($fixedDomainRoute->uri())->toBe('https://example.test/fixed-domain/{param}');
+        expect($defaultDomainRoute->uri())->toBe('https://{defaultDomain?}.au/default-parameters-domain/{param}');
+    });
+
+    it('does not prefix when APP_URL has no path', function () {
+        app('url')->forceRootUrl('http://localhost');
+        app()->forgetInstance(Routes::class);
+
+        $routes = app(Routes::class)->collect();
+        $postsRoute = $routes->first(fn (Route $r) => $r->name() === 'posts.index');
+
+        expect($postsRoute->uri())->toBe('http://localhost/posts');
+    });
+});
+
 describe('dot namespace', function () {
     it('returns dot-separated namespace for controllers', function () {
         $postRoute = $this->routes->first(fn (Route $r) => $r->name() === 'posts.index');

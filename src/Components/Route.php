@@ -26,6 +26,8 @@ class Route
 
     protected ?string $resolvedUri = null;
 
+    protected ?array $parsedRoot = null;
+
     protected ?string $resolvedControllerPath = null;
 
     protected ?int $methodLineNumber = null;
@@ -110,11 +112,23 @@ class Route
 
     public function scheme(): ?string
     {
-        return match (true) {
-            $this->base->httpOnly() => 'http://',
-            $this->base->httpsOnly() => 'https://',
-            default => $this->forcedScheme,
-        };
+        if ($this->base->httpOnly()) {
+            return 'http://';
+        }
+
+        if ($this->base->httpsOnly()) {
+            return 'https://';
+        }
+
+        if ($this->forcedRoot) {
+            $parts = $this->getParsedRoot();
+
+            if (isset($parts['scheme'])) {
+                return $parts['scheme'].'://';
+            }
+        }
+
+        return $this->forcedScheme;
     }
 
     public function domain(): ?string
@@ -124,7 +138,13 @@ class Route
         }
 
         if ($this->forcedRoot) {
-            return str_replace(['http://', 'https://'], '', $this->forcedRoot);
+            $parts = $this->getParsedRoot();
+
+            if (isset($parts['host'])) {
+                $port = isset($parts['port']) ? ':'.$parts['port'] : '';
+
+                return $parts['host'].$port;
+            }
         }
 
         return null;
@@ -201,13 +221,25 @@ class Route
     {
         $defaultParams = $this->paramDefaults->mapWithKeys(fn ($value, $key) => ["{{$key}}" => "{{$key}?}"]);
 
-        $scheme = $this->scheme() ?? '//';
+        $uri = str($this->base->uri)->start('/')->toString();
 
-        return str($this->base->uri)
-            ->start('/')
-            ->when($this->domain() !== null, fn ($uri) => $uri->prepend("{$scheme}{$this->domain()}"))
+        if (($basePath = $this->basePath()) !== '') {
+            $uri = str($basePath)->finish('/')->append(ltrim($uri, '/'))->toString();
+        }
+
+        if (($domain = $this->domain()) !== null) {
+            $uri = ($this->scheme() ?? '//').$domain.$uri;
+        }
+
+        $uri = str($uri)
             ->replace($defaultParams->keys()->toArray(), $defaultParams->values()->toArray())
             ->toString();
+
+        if ($uri !== '/') {
+            $uri = rtrim($uri, '/');
+        }
+
+        return $uri;
     }
 
     protected function resolveParameters(): Collection
@@ -222,6 +254,38 @@ class Route
             $this->paramDefaults->get($name),
             $signatureParams->first(fn ($p) => $p->getName() === $name),
         ));
+    }
+
+    protected function basePath(): string
+    {
+        $parts = $this->getParsedRoot();
+
+        if (! isset($parts['path'])) {
+            return '';
+        }
+
+        $path = '/'.trim($parts['path'], '/');
+
+        return $path === '/' ? '' : $path;
+    }
+
+    protected function getParsedRoot(): array
+    {
+        if ($this->parsedRoot !== null) {
+            return $this->parsedRoot;
+        }
+
+        $url = $this->forcedRoot ?: config('app.url');
+
+        if (! is_string($url) || $url === '') {
+            return $this->parsedRoot = [];
+        }
+
+        if (str_starts_with($url, '//')) {
+            $url = 'http:'.$url;
+        }
+
+        return $this->parsedRoot = parse_url($url) ?: [];
     }
 
     protected function relativePath(string $path)
