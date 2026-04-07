@@ -250,6 +250,17 @@ describe('explicit route key bindings', function () {
     });
 });
 
+describe('camelCase route model binding', function () {
+    it('resolves model binding for camelCase controller parameters with snake_case route parameters', function () {
+        $route = $this->routes->first(fn (Route $r) => str_contains($r->uri(), 'audit-entries'));
+        $params = $route->parameters();
+        $param = $params->first();
+
+        expect($param->name)->toBe('audit_entry');
+        expect($param->bound)->not->toBeNull();
+    });
+});
+
 describe('controller method line numbers', function () {
     it('returns line number for controller methods', function () {
         $postRoute = $this->routes->first(fn (Route $r) => $r->name() === 'posts.index');
