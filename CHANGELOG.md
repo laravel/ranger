@@ -1,6 +1,18 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/ranger/compare/v0.1.10...main)
+## [Unreleased](https://github.com/laravel/ranger/compare/v0.1.12...main)
+
+## [v0.1.12](https://github.com/laravel/ranger/compare/v0.1.10...v0.1.12) - 2026-04-16
+
+### What's Changed
+
+* Return relative URIs for explicit Route::domain routes by [@benddailey](https://github.com/benddailey) in https://github.com/laravel/ranger/pull/26
+
+### New Contributors
+
+* [@benddailey](https://github.com/benddailey) made their first contribution in https://github.com/laravel/ranger/pull/26
+
+**Full Changelog**: https://github.com/laravel/ranger/compare/v0.1.10...v0.1.12
 
 ## [v0.1.10](https://github.com/laravel/ranger/compare/v0.1.9...v0.1.10) - 2026-04-07
 
