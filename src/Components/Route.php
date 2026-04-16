@@ -227,7 +227,7 @@ class Route
             $uri = str($basePath)->finish('/')->append(ltrim($uri, '/'))->toString();
         }
 
-        if (($domain = $this->domain()) !== null) {
+        if (($domain = $this->domain()) !== null && $this->base->getDomain() === null) {
             $uri = ($this->scheme() ?? '//').$domain.$uri;
         }
 
