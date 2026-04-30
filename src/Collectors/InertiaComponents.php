@@ -55,6 +55,8 @@ class InertiaComponents
             }
         }
 
+        $resolver = app(ArrayableResolver::class);
+
         foreach ($data->value as $key => $value) {
             if ($value instanceof VariableState) {
                 $value = $value->type();
@@ -62,7 +64,7 @@ class InertiaComponents
 
             if (
                 $value instanceof ClassType
-                && $resolved = app(ArrayableResolver::class)->resolve($value)
+                && $resolved = $resolver->resolve($value)
             ) {
                 $value = $resolved;
             }

@@ -11,6 +11,7 @@ use App\Http\Controllers\Nested\NestedController;
 use App\Http\Controllers\OptionalController;
 use App\Http\Controllers\ParameterNameController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\TwoRoutesSameActionController;
 use App\Http\Controllers\UrlDefaultsController;
 use App\Http\Middleware\UrlDefaultsMiddleware;
@@ -73,6 +74,12 @@ Route::get('/anonymous-middleware', [AnonymousMiddlewareController::class, 'show
 Route::get('/package-route', function () {
     //
 })->name('my-package::store');
+
+Route::get('/resources/users/{user}', [ResourceController::class, 'show'])->name('resources.users.show');
+Route::get('/resources/users', [ResourceController::class, 'index'])->name('resources.users.index');
+Route::get('/resources/users/{user}/json-api', [ResourceController::class, 'jsonApi'])->name('resources.users.json-api');
+Route::get('/resources/checkout', [ResourceController::class, 'summary'])->name('resources.checkout');
+Route::get('/resources/plain', [ResourceController::class, 'plain'])->name('resources.plain');
 
 Route::prefix('/api/v1')->name('api.v1.')->group(function () {
     Route::get('/tasks', fn () => 'ok')->name('tasks');

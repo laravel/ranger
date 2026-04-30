@@ -27,7 +27,7 @@ class Response
     }
 
     /**
-     * @return list<InertiaResponse|JsonResponse>
+     * @return list<string|JsonResponse|ResourceResponse|JsonApiResponse>
      */
     public function parseResponse(array $action): array
     {
@@ -111,16 +111,14 @@ class Response
     {
         $responses = $this->filterReturnTypesFor(
             $result,
-            fn ($type) => $type instanceof ClassType
-                && ! $type instanceof InertiaRender
-                && ! $type instanceof SurveyorResourceResponse
-                && ! $type instanceof SurveyorJsonApiResourceResponse,
+            fn ($type) => get_class($type) === ClassType::class,
         );
 
+        $resolver = app(ArrayableResolver::class);
         $resolved = [];
 
         foreach ($responses as $classType) {
-            $arrayType = app(ArrayableResolver::class)->resolve($classType);
+            $arrayType = $resolver->resolve($classType);
 
             if ($arrayType instanceof ArrayType) {
                 $resolved[] = new JsonResponse($arrayType->value);
