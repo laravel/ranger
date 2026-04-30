@@ -9,7 +9,9 @@ use Laravel\Ranger\Components\ResourceResponse;
 use Laravel\Ranger\Support\AnalyzesRoutes;
 use Laravel\Surveyor\Analyzed\MethodResult;
 use Laravel\Surveyor\Analyzer\Analyzer;
+use Laravel\Surveyor\Analyzer\ArrayableResolver;
 use Laravel\Surveyor\Types\ArrayType;
+use Laravel\Surveyor\Types\ClassType;
 use Laravel\Surveyor\Types\Contracts\MultiType;
 use Laravel\Surveyor\Types\Entities\InertiaRender;
 use Laravel\Surveyor\Types\Entities\JsonApiResourceResponse as SurveyorJsonApiResourceResponse;
@@ -40,6 +42,7 @@ class Response
             $this->getJsonResponse($result),
             $this->getResourceResponse($result),
             $this->getJsonApiResponse($result),
+            $this->getArrayableClassResponse($result),
         );
     }
 
@@ -102,6 +105,29 @@ class Response
             meta: $response->meta instanceof ArrayType ? $response->meta->value : [],
             isCollection: $response->isCollection,
         ), $responses);
+    }
+
+    protected function getArrayableClassResponse(MethodResult $result): array
+    {
+        $responses = $this->filterReturnTypesFor(
+            $result,
+            fn ($type) => $type instanceof ClassType
+                && ! $type instanceof InertiaRender
+                && ! $type instanceof SurveyorResourceResponse
+                && ! $type instanceof SurveyorJsonApiResourceResponse,
+        );
+
+        $resolved = [];
+
+        foreach ($responses as $classType) {
+            $arrayType = app(ArrayableResolver::class)->resolve($classType);
+
+            if ($arrayType instanceof ArrayType) {
+                $resolved[] = new JsonResponse($arrayType->value);
+            }
+        }
+
+        return $resolved;
     }
 
     protected function filterReturnTypesFor(MethodResult $result, Closure $filter): array
