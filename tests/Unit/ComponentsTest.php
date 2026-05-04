@@ -199,6 +199,7 @@ describe('JsonApiResponse component', function () {
         $relationships = ['posts' => new StringType];
         $links = ['self' => new StringType];
         $meta = ['count' => new StringType];
+        $additional = ['version' => new StringType];
 
         $response = new JsonApiResponse(
             resourceClass: 'App\\JsonApi\\UserResource',
@@ -207,6 +208,7 @@ describe('JsonApiResponse component', function () {
             links: $links,
             meta: $meta,
             isCollection: false,
+            additional: $additional,
         );
 
         expect($response->resourceClass)->toBe('App\\JsonApi\\UserResource');
@@ -215,6 +217,7 @@ describe('JsonApiResponse component', function () {
         expect($response->links)->toBe($links);
         expect($response->meta)->toBe($meta);
         expect($response->isCollection)->toBeFalse();
+        expect($response->additional)->toBe($additional);
     });
 
     it('supports collection responses', function () {
@@ -228,6 +231,7 @@ describe('JsonApiResponse component', function () {
         );
 
         expect($response->isCollection)->toBeTrue();
+        expect($response->additional)->toBe([]);
     });
 });
 

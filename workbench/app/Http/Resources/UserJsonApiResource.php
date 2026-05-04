@@ -9,4 +9,11 @@ class UserJsonApiResource extends JsonApiResource
     public static $type = 'users';
 
     public static $attributes = ['name', 'email'];
+
+    public function with($request)
+    {
+        return [
+            'version' => '1.0',
+        ];
+    }
 }
