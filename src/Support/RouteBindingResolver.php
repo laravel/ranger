@@ -3,15 +3,17 @@
 namespace Laravel\Ranger\Support;
 
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Surveyor\Analyzer\Analyzer;
+use Laravel\Surveyor\Types\Contracts\Type as TypeContract;
 
 class RouteBindingResolver
 {
     protected static $booted = [];
 
-    protected static $columns = [];
+    protected static $analyzed = [];
 
     /**
-     * @return array{type: string|null, key: string}
+     * @return array{0: TypeContract|null, 1: string|null}
      */
     public static function resolveTypeAndKey(string $routable, $key): array
     {
@@ -23,12 +25,12 @@ class RouteBindingResolver
             return [null, $key];
         }
 
-        self::$columns[$routable] ??= $booted->getConnection()->getSchemaBuilder()->getColumns($booted->getTable());
+        $result = self::$analyzed[$routable] ??= app(Analyzer::class)->analyzeClass($routable)->result();
 
-        $firstColumn = collect(self::$columns[$routable])->first(
-            fn ($column) => $column['name'] === $key,
-        );
+        if ($result === null || ! $result->hasProperty($key)) {
+            return [null, $key];
+        }
 
-        return [$firstColumn['type_name'] ?? null, $key];
+        return [$result->getProperty($key)->type, $key];
     }
 }
