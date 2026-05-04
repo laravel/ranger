@@ -11,6 +11,7 @@ class JsonApiResponse
         public readonly array $links,
         public readonly array $meta,
         public readonly bool $isCollection,
+        public readonly array $additional = [],
     ) {
         //
     }

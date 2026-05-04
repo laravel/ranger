@@ -47,6 +47,7 @@ describe('resource responses', function () {
         expect($responses[0]->resourceClass)->toBe('App\\Http\\Resources\\UserJsonApiResource');
         expect($responses[0]->isCollection)->toBeFalse();
         expect(array_keys($responses[0]->attributes))->toEqual(['name', 'email']);
+        expect(array_keys($responses[0]->additional))->toEqual(['version']);
     });
 
     it('captures arrayable DTOs as JSON responses', function () {

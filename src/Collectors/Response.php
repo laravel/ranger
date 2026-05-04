@@ -104,6 +104,7 @@ class Response
             links: $response->links instanceof ArrayType ? $response->links->value : [],
             meta: $response->meta instanceof ArrayType ? $response->meta->value : [],
             isCollection: $response->isCollection,
+            additional: $response->additional instanceof ArrayType ? $response->additional->value : [],
         ), $responses);
     }
 
