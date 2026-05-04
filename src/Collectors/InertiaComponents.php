@@ -3,10 +3,12 @@
 namespace Laravel\Ranger\Collectors;
 
 use Laravel\Ranger\Components\InertiaResponse;
+use Laravel\Surveyor\Analyzer\ArrayableResolver;
 use Laravel\Surveyor\Result\VariableState;
 use Laravel\Surveyor\Types\ArrayShapeType;
 use Laravel\Surveyor\Types\ArrayType;
 use Laravel\Surveyor\Types\CallableType;
+use Laravel\Surveyor\Types\ClassType;
 use Laravel\Surveyor\Types\Type;
 use Laravel\Surveyor\Types\UnionType;
 
@@ -53,9 +55,18 @@ class InertiaComponents
             }
         }
 
+        $resolver = app(ArrayableResolver::class);
+
         foreach ($data->value as $key => $value) {
             if ($value instanceof VariableState) {
                 $value = $value->type();
+            }
+
+            if (
+                $value instanceof ClassType
+                && $resolved = $resolver->resolve($value)
+            ) {
+                $value = $resolved;
             }
 
             if (in_array($key, $same)) {

@@ -6,8 +6,10 @@ use Laravel\Ranger\Components\Enum;
 use Laravel\Ranger\Components\EnvironmentVariable;
 use Laravel\Ranger\Components\InertiaResponse;
 use Laravel\Ranger\Components\InertiaSharedData;
+use Laravel\Ranger\Components\JsonApiResponse;
 use Laravel\Ranger\Components\JsonResponse;
 use Laravel\Ranger\Components\Model;
+use Laravel\Ranger\Components\ResourceResponse;
 use Laravel\Ranger\Components\Validator;
 use Laravel\Ranger\Support\Verb;
 use Laravel\Surveyor\Types\ArrayType;
@@ -154,6 +156,78 @@ describe('JsonResponse component', function () {
         $response = new JsonResponse($data);
 
         expect($response->data)->toBe($data);
+    });
+});
+
+describe('ResourceResponse component', function () {
+    it('can be instantiated with full attributes', function () {
+        $data = ['id' => new StringType, 'name' => new StringType];
+        $additional = ['version' => new StringType];
+
+        $response = new ResourceResponse(
+            resourceClass: 'App\\Http\\Resources\\UserResource',
+            data: $data,
+            isCollection: false,
+            wrap: 'data',
+            additional: $additional,
+        );
+
+        expect($response->resourceClass)->toBe('App\\Http\\Resources\\UserResource');
+        expect($response->data)->toBe($data);
+        expect($response->isCollection)->toBeFalse();
+        expect($response->wrap)->toBe('data');
+        expect($response->additional)->toBe($additional);
+    });
+
+    it('supports collection and null wrap', function () {
+        $response = new ResourceResponse(
+            resourceClass: 'App\\Http\\Resources\\UserResource',
+            data: ['id' => new StringType],
+            isCollection: true,
+            wrap: null,
+        );
+
+        expect($response->isCollection)->toBeTrue();
+        expect($response->wrap)->toBeNull();
+        expect($response->additional)->toBe([]);
+    });
+});
+
+describe('JsonApiResponse component', function () {
+    it('can be instantiated with all sections', function () {
+        $attributes = ['name' => new StringType];
+        $relationships = ['posts' => new StringType];
+        $links = ['self' => new StringType];
+        $meta = ['count' => new StringType];
+
+        $response = new JsonApiResponse(
+            resourceClass: 'App\\JsonApi\\UserResource',
+            attributes: $attributes,
+            relationships: $relationships,
+            links: $links,
+            meta: $meta,
+            isCollection: false,
+        );
+
+        expect($response->resourceClass)->toBe('App\\JsonApi\\UserResource');
+        expect($response->attributes)->toBe($attributes);
+        expect($response->relationships)->toBe($relationships);
+        expect($response->links)->toBe($links);
+        expect($response->meta)->toBe($meta);
+        expect($response->isCollection)->toBeFalse();
+    });
+
+    it('supports collection responses', function () {
+        $response = new JsonApiResponse(
+            resourceClass: 'App\\JsonApi\\UserResource',
+            attributes: ['name' => new StringType],
+            relationships: [],
+            links: [],
+            meta: [],
+            isCollection: true,
+        );
+
+        expect($response->isCollection)->toBeTrue();
     });
 });
 
