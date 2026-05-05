@@ -1,6 +1,16 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/ranger/compare/v0.1.12...main)
+## [Unreleased](https://github.com/laravel/ranger/compare/v0.2.0...main)
+
+## [v0.2.0](https://github.com/laravel/ranger/compare/v0.1.12...v0.2.0) - 2026-05-04
+
+### What's Changed
+
+* Collect API resource and arrayable responses by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/ranger/pull/27
+* Resolve route binding types via Surveyor analyzer by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/ranger/pull/28
+* Surface JSON:API resource additional data by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/ranger/pull/29
+
+**Full Changelog**: https://github.com/laravel/ranger/compare/v0.1.12...v0.2.0
 
 ## [v0.1.12](https://github.com/laravel/ranger/compare/v0.1.10...v0.1.12) - 2026-04-16
 
