@@ -80,6 +80,7 @@ Route::get('/package-route', function () {
 
 Route::get('/resources/users/{user}', [ResourceController::class, 'show'])->name('resources.users.show');
 Route::get('/resources/users', [ResourceController::class, 'index'])->name('resources.users.index');
+Route::get('/resources/users/{user}/base', [ResourceController::class, 'showAsBase'])->name('resources.users.show-as-base');
 Route::get('/resources/users/{user}/json-api', [ResourceController::class, 'jsonApi'])->name('resources.users.json-api');
 Route::get('/resources/checkout', [ResourceController::class, 'summary'])->name('resources.checkout');
 Route::get('/resources/plain', [ResourceController::class, 'plain'])->name('resources.plain');

@@ -6,6 +6,7 @@ use App\Http\Resources\UserJsonApiResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Support\CheckoutSummary;
+use Illuminate\Http\Resources\Json\JsonResource;
 
 class ResourceController
 {
@@ -17,6 +18,11 @@ class ResourceController
     public function index()
     {
         return UserResource::collection(User::all());
+    }
+
+    public function showAsBase(User $user): JsonResource
+    {
+        return new UserResource($user);
     }
 
     public function jsonApi(User $user): UserJsonApiResource

@@ -38,6 +38,15 @@ describe('resource responses', function () {
         expect($responses[0]->isCollection)->toBeTrue();
     });
 
+    it('does not duplicate Eloquent resource responses when the controller declares JsonResource as the return type', function () {
+        $route = ranger_route('resources.users.show-as-base');
+        $responses = $route->possibleResponses();
+
+        expect($responses)->toHaveCount(1);
+        expect($responses[0])->toBeInstanceOf(ResourceResponse::class);
+        expect($responses[0]->resourceClass)->toBe('App\\Http\\Resources\\UserResource');
+    });
+
     it('captures JSON:API resource responses', function () {
         $route = ranger_route('resources.users.json-api');
         $responses = $route->possibleResponses();

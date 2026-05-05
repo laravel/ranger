@@ -3,6 +3,7 @@
 namespace Laravel\Ranger\Collectors;
 
 use Closure;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Laravel\Ranger\Components\JsonApiResponse;
 use Laravel\Ranger\Components\JsonResponse;
 use Laravel\Ranger\Components\ResourceResponse;
@@ -112,7 +113,8 @@ class Response
     {
         $responses = $this->filterReturnTypesFor(
             $result,
-            fn ($type) => get_class($type) === ClassType::class,
+            fn ($type) => get_class($type) === ClassType::class
+                && ! is_a($type->resolved(), JsonResource::class, true),
         );
 
         $resolver = app(ArrayableResolver::class);
