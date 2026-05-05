@@ -1,6 +1,14 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/ranger/compare/v0.2.0...main)
+## [Unreleased](https://github.com/laravel/ranger/compare/v0.2.1...main)
+
+## [v0.2.1](https://github.com/laravel/ranger/compare/v0.2.0...v0.2.1) - 2026-05-05
+
+### What's Changed
+
+* Skip JsonResource subclasses in arrayable fallback by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/ranger/pull/30
+
+**Full Changelog**: https://github.com/laravel/ranger/compare/v0.2.0...v0.2.1
 
 ## [v0.2.0](https://github.com/laravel/ranger/compare/v0.1.12...v0.2.0) - 2026-05-04
 
