@@ -227,8 +227,8 @@ class Route
             $uri = str($basePath)->finish('/')->append(ltrim($uri, '/'))->toString();
         }
 
-        if (($domain = $this->domain()) !== null && $this->base->getDomain() === null) {
-            $uri = ($this->scheme() ?? '//').$domain.$uri;
+        if (($domain = $this->domain()) !== null) {
+            $uri = ($this->scheme() ?? '//').$this->mergeDomainPort($domain).$uri;
         }
 
         $uri = str($uri)
@@ -267,6 +267,21 @@ class Route
         $path = '/'.trim($parts['path'], '/');
 
         return $path === '/' ? '' : $path;
+    }
+
+    protected function mergeDomainPort(string $domain): string
+    {
+        if (str_contains($domain, ':')) {
+            return $domain;
+        }
+
+        $parts = $this->getParsedRoot();
+
+        if (! isset($parts['port'])) {
+            return $domain;
+        }
+
+        return $domain.':'.$parts['port'];
     }
 
     protected function getParsedRoot(): array
