@@ -281,7 +281,7 @@ describe('APP_URL base path and port resolution', function () {
         expect($postsRoute->uri())->toBe('http://localhost:8081/v2/posts');
     });
 
-    it('returns relative URIs for explicit Route::domain routes even when forcedRoot is set', function () {
+    it('merges scheme and port from forcedRoot into explicit Route::domain URIs', function () {
         app('url')->forceRootUrl('https://localhost:8001');
         app()->forgetInstance(Routes::class);
 
@@ -290,20 +290,30 @@ describe('APP_URL base path and port resolution', function () {
         $fixedDomainRoute = $routes->first(fn (Route $r) => str_contains($r->uri(), 'fixed-domain'));
         $defaultDomainRoute = $routes->first(fn (Route $r) => str_contains($r->uri(), 'default-parameters-domain'));
 
-        expect($fixedDomainRoute->uri())->toBe('/fixed-domain/{param}');
-        expect($defaultDomainRoute->uri())->toBe('/default-parameters-domain/{param}');
+        expect($fixedDomainRoute->uri())->toBe('https://example.test:8001/fixed-domain/{param}');
+        expect($defaultDomainRoute->uri())->toBe('https://{defaultDomain?}.au:8001/default-parameters-domain/{param}');
     });
 
-    it('returns relative URIs for explicit Route::domain routes with no forcedRoot', function () {
+    it('returns protocol-relative URIs for explicit Route::domain routes when APP_URL has no port', function () {
         $fixedDomainRoute = $this->routes->first(fn (Route $r) => str_contains($r->uri(), 'fixed-domain'));
         $dynamicDomainRoute = $this->routes->first(fn (Route $r) => str_contains($r->uri(), 'dynamic-domain'));
 
-        expect($fixedDomainRoute->uri())->toBe('/fixed-domain/{param}');
-        expect($dynamicDomainRoute->uri())->toBe('/dynamic-domain/{param}');
+        expect($fixedDomainRoute->uri())->toBe('//example.test/fixed-domain/{param}');
+        expect($dynamicDomainRoute->uri())->toBe('//{domain}.au/dynamic-domain/{param}');
 
-        // The routing-level domain metadata is still preserved for consumers that need it.
+        // The routing-level domain metadata is preserved for consumers that need it.
         expect($fixedDomainRoute->domain())->toBe('example.test');
         expect($dynamicDomainRoute->domain())->toBe('{domain}.au');
+    });
+
+    it('merges port from APP_URL into explicit Route::domain URIs', function () {
+        app('url')->forceRootUrl('http://assets.localhost:8000');
+        app()->forgetInstance(Routes::class);
+
+        $routes = app(Routes::class)->collect();
+        $fixedDomainRoute = $routes->first(fn (Route $r) => str_contains($r->uri(), 'fixed-domain'));
+
+        expect($fixedDomainRoute->uri())->toBe('http://example.test:8000/fixed-domain/{param}');
     });
 
     it('does not prefix when APP_URL has no path', function () {
