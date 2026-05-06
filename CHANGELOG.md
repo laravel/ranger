@@ -1,6 +1,14 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/ranger/compare/v0.2.1...main)
+## [Unreleased](https://github.com/laravel/ranger/compare/v0.2.2...main)
+
+## [v0.2.2](https://github.com/laravel/ranger/compare/v0.2.1...v0.2.2) - 2026-05-06
+
+### What's Changed
+
+* Merge APP_URL port into explicit Route::domain URIs by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/ranger/pull/31
+
+**Full Changelog**: https://github.com/laravel/ranger/compare/v0.2.1...v0.2.2
 
 ## [v0.2.1](https://github.com/laravel/ranger/compare/v0.2.0...v0.2.1) - 2026-05-05
 
