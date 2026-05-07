@@ -8,6 +8,7 @@ use Laravel\Surveyor\Types\BoolType;
 use Laravel\Surveyor\Types\IntType;
 use Laravel\Surveyor\Types\StringType;
 use Laravel\Surveyor\Types\Type;
+use Laravel\Surveyor\Types\UnionType;
 
 beforeEach(function () {
     $reflection = new ReflectionClass(InertiaComponents::class);
@@ -87,6 +88,46 @@ describe('InertiaComponents static class', function () {
 
         // canRegister is only in first route, should be optional
         expect($stats['canRegister']->isOptional())->toBeTrue();
+    });
+
+    it('merges a prop whose type changes between an array and a non-array across renders', function () {
+        // Route 1: todaySchedules is some non-array (e.g. fallback empty string)
+        $data1 = new ArrayType([
+            'todaySchedules' => new StringType,
+        ]);
+
+        // Route 2: todaySchedules is a populated array shape
+        $data2 = new ArrayType([
+            'todaySchedules' => new ArrayType([
+                'id' => new IntType,
+            ]),
+        ]);
+
+        InertiaComponents::addComponent('Dashboard', $data1);
+        InertiaComponents::addComponent('Dashboard', $data2);
+
+        $component = InertiaComponents::getComponent('Dashboard');
+
+        expect($component->data)->toHaveKey('todaySchedules');
+        expect($component->data['todaySchedules'])->toBeInstanceOf(UnionType::class);
+    });
+
+    it('accepts a union type as the top-level component data', function () {
+        // e.g. Inertia::render('Foo', $cond ? ['a' => 1] : ['b' => 2])
+        // surveyor reports the data argument as a union of array shapes.
+        $data = Type::union(
+            new ArrayType(['a' => new IntType]),
+            new ArrayType(['b' => new StringType]),
+        );
+
+        InertiaComponents::addComponent('Foo', $data);
+
+        $component = InertiaComponents::getComponent('Foo');
+
+        expect($component->data)->toHaveKey('a');
+        expect($component->data)->toHaveKey('b');
+        expect($component->data['a']->isOptional())->toBeTrue();
+        expect($component->data['b']->isOptional())->toBeTrue();
     });
 
     it('merges nested array shape props correctly', function () {

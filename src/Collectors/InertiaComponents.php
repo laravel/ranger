@@ -9,6 +9,7 @@ use Laravel\Surveyor\Types\ArrayShapeType;
 use Laravel\Surveyor\Types\ArrayType;
 use Laravel\Surveyor\Types\CallableType;
 use Laravel\Surveyor\Types\ClassType;
+use Laravel\Surveyor\Types\Contracts\Type as TypeContract;
 use Laravel\Surveyor\Types\Type;
 use Laravel\Surveyor\Types\UnionType;
 
@@ -19,8 +20,20 @@ class InertiaComponents
      */
     protected static array $components = [];
 
-    public static function addComponent(string $component, ArrayType|ArrayShapeType $data): void
+    public static function addComponent(string $component, TypeContract $data): void
     {
+        if ($data instanceof UnionType) {
+            foreach ($data->types as $type) {
+                self::addComponent($component, $type);
+            }
+
+            return;
+        }
+
+        if (! $data instanceof ArrayType && ! $data instanceof ArrayShapeType) {
+            return;
+        }
+
         $data = $data instanceof ArrayShapeType ? new ArrayType([]) : $data;
 
         self::$components[$component] = self::mergeComponentData($component, self::getComponentData($component), $data);
@@ -80,11 +93,10 @@ class InertiaComponents
                 $existingData[$key] = $value;
             }
 
-            if ($value instanceof ArrayType) {
-                $existingValue = $existingData[$key] ?? [];
+            if ($value instanceof ArrayType && ($existingData[$key] ?? null) instanceof ArrayType) {
                 $newValue = self::mergeComponentData(
                     $component,
-                    $existingValue instanceof ArrayType ? $existingValue->value : $existingValue,
+                    $existingData[$key]->value,
                     $value,
                 );
 
