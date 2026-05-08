@@ -1,6 +1,14 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/ranger/compare/v0.2.2...main)
+## [Unreleased](https://github.com/laravel/ranger/compare/v0.2.3...main)
+
+## [v0.2.3](https://github.com/laravel/ranger/compare/v0.2.2...v0.2.3) - 2026-05-07
+
+### What's Changed
+
+* Handle UnionType in InertiaComponents merge by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/ranger/pull/32
+
+**Full Changelog**: https://github.com/laravel/ranger/compare/v0.2.2...v0.2.3
 
 ## [v0.2.2](https://github.com/laravel/ranger/compare/v0.2.1...v0.2.2) - 2026-05-06
 
