@@ -6,7 +6,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Support\Collection;
 use Laravel\Ranger\Components\BroadcastEvent;
-use Laravel\Surveyor\Analyzed\ClassResult;
+use Laravel\Surveyor\Analyzed\ClassLikeResult;
 use Laravel\Surveyor\Analyzer\Analyzer;
 use Laravel\Surveyor\Types\ArrayType;
 use Laravel\Surveyor\Types\Contracts\Type;
@@ -56,7 +56,7 @@ class BroadcastEvents extends Collector
     /**
      * @param  class-string<ShouldBroadcast>  $class
      */
-    protected function resolveEventName(ClassResult $analyzed, string $class): string
+    protected function resolveEventName(ClassLikeResult $analyzed, string $class): string
     {
         if ($analyzed->hasMethod('broadcastAs')) {
             return $analyzed->getMethod('broadcastAs')->returnType()->value;
@@ -65,7 +65,7 @@ class BroadcastEvents extends Collector
         return $class;
     }
 
-    protected function resolveBroadcastWith(ClassResult $analyzed): Type
+    protected function resolveBroadcastWith(ClassLikeResult $analyzed): Type
     {
         if ($analyzed->hasMethod('broadcastWith')) {
             return $analyzed->getMethod('broadcastWith')->returnType();
