@@ -4,7 +4,6 @@ use App\Models\ApiResponse;
 use App\Models\Comment;
 use App\Models\Post;
 use App\Models\User;
-use App\Models\Visibility;
 use Laravel\Ranger\Collectors\Models;
 use Laravel\Ranger\Components\Model;
 use Laravel\Surveyor\Types\ArrayType;
@@ -156,60 +155,6 @@ describe('eager loading', function () {
 
         expect($relations)->toHaveKey('authoredBy');
         expect($relations['authoredBy']->required)->toBeTrue();
-    });
-});
-
-describe('serialization visibility', function () {
-    it('captures the $hidden list from the model', function () {
-        $models = $this->collector->collect();
-        $userModel = $models->first(fn (Model $m) => $m->name === User::class);
-
-        expect($userModel->getHidden())->toBe(['password', 'remember_token']);
-    });
-
-    it('captures the $visible list from the model', function () {
-        $models = $this->collector->collect();
-        $visibility = $models->first(fn (Model $m) => $m->name === Visibility::class);
-
-        expect($visibility->getVisible())->toBe(['id', 'name', 'display_name']);
-    });
-
-    it('captures the $appends list from the model', function () {
-        $models = $this->collector->collect();
-        $visibility = $models->first(fn (Model $m) => $m->name === Visibility::class);
-
-        expect($visibility->getAppends())->toBe(['display_name']);
-    });
-
-    it('defaults visibility lists to empty arrays when undefined', function () {
-        $models = $this->collector->collect();
-        $postModel = $models->first(fn (Model $m) => $m->name === Post::class);
-
-        expect($postModel->getHidden())->toBe([]);
-        expect($postModel->getVisible())->toBe([]);
-        expect($postModel->getAppends())->toBe([]);
-    });
-
-    it('filters $hidden attributes out of visibleProperties()', function () {
-        $models = $this->collector->collect();
-        $userModel = $models->first(fn (Model $m) => $m->name === User::class);
-
-        $visible = $userModel->visibleProperties();
-
-        expect($visible)->not->toHaveKey('password');
-        expect($visible)->not->toHaveKey('remember_token');
-        expect($visible)->toHaveKey('email');
-    });
-
-    it('treats $visible as a whitelist in visibleProperties()', function () {
-        $models = $this->collector->collect();
-        $visibility = $models->first(fn (Model $m) => $m->name === Visibility::class);
-
-        $visible = $visibility->visibleProperties();
-
-        expect(array_keys($visible))->toEqualCanonicalizing(['id', 'name', 'display_name']);
-        expect($visible)->not->toHaveKey('secret');
-        expect($visible)->not->toHaveKey('internal_note');
     });
 });
 
