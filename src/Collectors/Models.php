@@ -22,8 +22,8 @@ use Laravel\Surveyor\Types\ArrayType;
 use Laravel\Surveyor\Types\BoolType;
 use Laravel\Surveyor\Types\ClassType;
 use Laravel\Surveyor\Types\Contracts\Type as SurveyorTypeContract;
-use Laravel\Surveyor\Types\StringType;
 use Laravel\Surveyor\Types\Type;
+use ReflectionClass;
 use Spatie\StructureDiscoverer\Discover;
 
 class Models extends Collector
@@ -75,8 +75,11 @@ class Models extends Collector
 
         $modelComponent = new ModelComponent($model);
 
-        $eagerLoadRelations = $this->gatherEagerLoadRelations($result);
+        $eagerLoadRelations = $this->getModelArrayProperty($model, 'with');
         $modelComponent->setSnakeCaseAttributes($this->shouldSnakeCase($result));
+        $modelComponent->setHidden($this->getModelArrayProperty($model, 'hidden'));
+        $modelComponent->setVisible($this->getModelArrayProperty($model, 'visible'));
+        $modelComponent->setAppends($this->getModelArrayProperty($model, 'appends'));
 
         $this->modelComponents->offsetSet($modelComponent->name, $modelComponent);
         $modelComponent->setFilePath($result->filePath());
@@ -104,23 +107,19 @@ class Models extends Collector
         }
     }
 
-    protected function gatherEagerLoadRelations(ClassResult $result): array
+    /**
+     * @param  class-string<Model>  $model
+     * @return list<string>
+     */
+    protected function getModelArrayProperty(string $model, string $propertyName): array
     {
-        $propertyName = 'with';
+        $defaults = (new ReflectionClass($model))->getDefaultProperties();
 
-        if (! $result->hasProperty($propertyName) || ! $result->getProperty($propertyName)->type instanceof ArrayType) {
+        if (! array_key_exists($propertyName, $defaults) || ! is_array($defaults[$propertyName])) {
             return [];
         }
 
-        $eagerLoadRelations = [];
-
-        foreach ($result->getProperty($propertyName)->type->value as $relation) {
-            if ($relation instanceof StringType) {
-                $eagerLoadRelations[] = $relation->value;
-            }
-        }
-
-        return $eagerLoadRelations;
+        return array_values(array_filter($defaults[$propertyName], 'is_string'));
     }
 
     protected function shouldSnakeCase(ClassResult $result): bool
