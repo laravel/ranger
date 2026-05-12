@@ -1,6 +1,14 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/ranger/compare/v0.2.3...main)
+## [Unreleased](https://github.com/laravel/ranger/compare/v0.2.4...main)
+
+## [v0.2.4](https://github.com/laravel/ranger/compare/v0.2.3...v0.2.4) - 2026-05-12
+
+### What's Changed
+
+* Respect $hidden, $visible, and $appends on model components by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/ranger/pull/33
+
+**Full Changelog**: https://github.com/laravel/ranger/compare/v0.2.3...v0.2.4
 
 ## [v0.2.3](https://github.com/laravel/ranger/compare/v0.2.2...v0.2.3) - 2026-05-07
 
