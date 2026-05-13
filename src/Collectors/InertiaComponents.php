@@ -56,6 +56,9 @@ class InertiaComponents
 
     protected static function mergeComponentData(string $component, array $existingData, ArrayType $data): array
     {
+        $resolver = app(ArrayableResolver::class);
+        $data = self::normalizeData($data, $resolver);
+
         if (! self::hasComponent($component)) {
             return $data->value;
         }
@@ -68,20 +71,7 @@ class InertiaComponents
             }
         }
 
-        $resolver = app(ArrayableResolver::class);
-
         foreach ($data->value as $key => $value) {
-            if ($value instanceof VariableState) {
-                $value = $value->type();
-            }
-
-            if (
-                $value instanceof ClassType
-                && $resolved = $resolver->resolve($value)
-            ) {
-                $value = $resolved;
-            }
-
             if (in_array($key, $same)) {
                 if (get_class($value) !== get_class($existingData[$key])) {
                     $value1 = $value instanceof UnionType ? $value->types : [$value];
@@ -109,5 +99,55 @@ class InertiaComponents
         }
 
         return $existingData;
+    }
+
+    protected static function normalizeData(ArrayType $data, ArrayableResolver $resolver): ArrayType
+    {
+        $normalized = [];
+
+        foreach ($data->value as $key => $value) {
+            $normalized[$key] = self::normalizeValue($value, $resolver);
+        }
+
+        return (new ArrayType($normalized))
+            ->optional($data->isOptional())
+            ->nullable($data->isNullable());
+    }
+
+    protected static function normalizeValue(TypeContract|VariableState $value, ArrayableResolver $resolver): TypeContract
+    {
+        if ($value instanceof VariableState) {
+            $value = $value->type();
+        }
+
+        if ($value instanceof ClassType && $resolved = $resolver->resolve($value)) {
+            return $resolved
+                ->optional($value->isOptional())
+                ->nullable($value->isNullable());
+        }
+
+        if ($value instanceof ArrayType) {
+            return self::normalizeData($value, $resolver);
+        }
+
+        if ($value instanceof ArrayShapeType) {
+            return (new ArrayShapeType(
+                self::normalizeValue($value->keyType, $resolver),
+                self::normalizeValue($value->valueType, $resolver),
+            ))
+                ->optional($value->isOptional())
+                ->nullable($value->isNullable());
+        }
+
+        if ($value instanceof UnionType) {
+            return Type::union(...array_map(
+                fn ($type) => self::normalizeValue($type, $resolver),
+                $value->types,
+            ))
+                ->optional($value->isOptional())
+                ->nullable($value->isNullable());
+        }
+
+        return $value;
     }
 }

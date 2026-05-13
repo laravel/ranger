@@ -1,10 +1,12 @@
 <?php
 
+use App\Support\CheckoutSummary;
 use Laravel\Ranger\Collectors\InertiaComponents;
 use Laravel\Ranger\Components\InertiaResponse;
 use Laravel\Surveyor\Types\ArrayShapeType;
 use Laravel\Surveyor\Types\ArrayType;
 use Laravel\Surveyor\Types\BoolType;
+use Laravel\Surveyor\Types\ClassType;
 use Laravel\Surveyor\Types\IntType;
 use Laravel\Surveyor\Types\StringType;
 use Laravel\Surveyor\Types\Type;
@@ -29,6 +31,33 @@ describe('InertiaComponents static class', function () {
         expect($component->data)->toHaveKey('title');
         expect($component->data['title'])->toBeInstanceOf(StringType::class);
         expect($component->data['title']->isOptional())->toBeFalse();
+    });
+
+    it('resolves arrayable class props on first add', function () {
+        $data = new ArrayType(['summary' => new ClassType(CheckoutSummary::class)]);
+
+        InertiaComponents::addComponent('Checkout', $data);
+
+        $component = InertiaComponents::getComponent('Checkout');
+
+        expect($component->data['summary'])->toBeInstanceOf(ArrayType::class);
+        expect($component->data['summary']->value['total'])->toBeInstanceOf(IntType::class);
+        expect($component->data['summary']->value['currency'])->toBeInstanceOf(StringType::class);
+    });
+
+    it('resolves arrayable classes inside array shape props', function () {
+        $data = new ArrayType([
+            'summaries' => new ArrayShapeType(Type::int(), new ClassType(CheckoutSummary::class)),
+        ]);
+
+        InertiaComponents::addComponent('Checkout', $data);
+
+        $component = InertiaComponents::getComponent('Checkout');
+
+        expect($component->data['summaries'])->toBeInstanceOf(ArrayShapeType::class);
+        expect($component->data['summaries']->valueType)->toBeInstanceOf(ArrayType::class);
+        expect($component->data['summaries']->valueType->value['total'])->toBeInstanceOf(IntType::class);
+        expect($component->data['summaries']->valueType->value['currency'])->toBeInstanceOf(StringType::class);
     });
 
     it('returns empty data for non-existent components', function () {
