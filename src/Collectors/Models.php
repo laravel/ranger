@@ -16,7 +16,7 @@ use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Laravel\Ranger\Components\Model as ModelComponent;
-use Laravel\Surveyor\Analyzed\ClassResult;
+use Laravel\Surveyor\Analyzed\ClassLikeResult;
 use Laravel\Surveyor\Analyzer\Analyzer;
 use Laravel\Surveyor\Types\ArrayType;
 use Laravel\Surveyor\Types\BoolType;
@@ -122,7 +122,7 @@ class Models extends Collector
         return array_values(array_filter($defaults[$propertyName], 'is_string'));
     }
 
-    protected function shouldSnakeCase(ClassResult $result): bool
+    protected function shouldSnakeCase(ClassLikeResult $result): bool
     {
         $propertyName = 'snakeAttributes';
 
