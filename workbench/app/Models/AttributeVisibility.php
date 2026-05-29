@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Attributes\Visible;
 use Illuminate\Database\Eloquent\Model;
 
 #[Visible(['id', 'email'])]
-#[Hidden(['password'])]
-#[Appends(['full_name'])]
+#[Hidden('password')]
+#[Appends('full_name')]
 class AttributeVisibility extends Model
 {
     /**

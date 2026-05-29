@@ -136,7 +136,15 @@ class Models extends Collector
                     $attributes = $reflection->getAttributes($attributeClass);
                     if (count($attributes) > 0) {
                         $arguments = $attributes[0]->getArguments();
-                        $columns = $arguments[0] ?? $arguments['columns'] ?? [];
+                        $columns = [];
+                        if (count($arguments) > 0) {
+                            $firstArg = reset($arguments);
+                            if (is_array($firstArg)) {
+                                $columns = $firstArg;
+                            } else {
+                                $columns = $arguments;
+                            }
+                        }
                         if (is_array($columns)) {
                             $attributeValues = array_values(array_filter($columns, 'is_string'));
                         }
