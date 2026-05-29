@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\ApiResponse;
+use App\Models\AttributeVisibility;
 use App\Models\Comment;
 use App\Models\Post;
 use App\Models\User;
@@ -210,6 +211,27 @@ describe('serialization visibility', function () {
         expect(array_keys($visible))->toEqualCanonicalizing(['id', 'name', 'display_name']);
         expect($visible)->not->toHaveKey('secret');
         expect($visible)->not->toHaveKey('internal_note');
+    });
+
+    it('captures visible list from the model #[Visible] attribute', function () {
+        $models = $this->collector->collect();
+        $model = $models->first(fn (Model $m) => $m->name === AttributeVisibility::class);
+
+        expect($model->getVisible())->toEqualCanonicalizing(['name', 'id', 'email']);
+    });
+
+    it('captures hidden list from the model #[Hidden] attribute', function () {
+        $models = $this->collector->collect();
+        $model = $models->first(fn (Model $m) => $m->name === AttributeVisibility::class);
+
+        expect($model->getHidden())->toEqualCanonicalizing(['remember_token', 'password']);
+    });
+
+    it('captures appends list from the model #[Appends] attribute', function () {
+        $models = $this->collector->collect();
+        $model = $models->first(fn (Model $m) => $m->name === AttributeVisibility::class);
+
+        expect($model->getAppends())->toEqualCanonicalizing(['avatar_url', 'full_name']);
     });
 });
 

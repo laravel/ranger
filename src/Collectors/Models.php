@@ -115,11 +115,40 @@ class Models extends Collector
     {
         $defaults = (new ReflectionClass($model))->getDefaultProperties();
 
-        if (! array_key_exists($propertyName, $defaults) || ! is_array($defaults[$propertyName])) {
-            return [];
+        $propertyValues = [];
+        if (array_key_exists($propertyName, $defaults) && is_array($defaults[$propertyName])) {
+            $propertyValues = array_values(array_filter($defaults[$propertyName], 'is_string'));
         }
 
-        return array_values(array_filter($defaults[$propertyName], 'is_string'));
+        $attributeClass = match ($propertyName) {
+            'visible' => 'Illuminate\Database\Eloquent\Attributes\Visible',
+            'hidden' => 'Illuminate\Database\Eloquent\Attributes\Hidden',
+            'appends' => 'Illuminate\Database\Eloquent\Attributes\Appends',
+            default => null,
+        };
+
+        $attributeValues = [];
+
+        if ($attributeClass) {
+            try {
+                $reflection = new ReflectionClass($model);
+                do {
+                    $attributes = $reflection->getAttributes($attributeClass);
+                    if (count($attributes) > 0) {
+                        $arguments = $attributes[0]->getArguments();
+                        $columns = $arguments[0] ?? $arguments['columns'] ?? [];
+                        if (is_array($columns)) {
+                            $attributeValues = array_values(array_filter($columns, 'is_string'));
+                        }
+                        break;
+                    }
+                } while ($reflection = $reflection->getParentClass());
+            } catch (\Throwable) {
+                // Ignore any reflection or class loading errors
+            }
+        }
+
+        return array_values(array_unique(array_merge($propertyValues, $attributeValues)));
     }
 
     protected function shouldSnakeCase(ClassLikeResult $result): bool
