@@ -25,6 +25,7 @@ use Laravel\Surveyor\Types\Contracts\Type as SurveyorTypeContract;
 use Laravel\Surveyor\Types\Type;
 use ReflectionClass;
 use Spatie\StructureDiscoverer\Discover;
+use Throwable;
 
 class Models extends Collector
 {
@@ -113,9 +114,11 @@ class Models extends Collector
      */
     protected function getModelArrayProperty(string $model, string $propertyName): array
     {
-        $defaults = (new ReflectionClass($model))->getDefaultProperties();
+        $reflection = new ReflectionClass($model);
+        $defaults = $reflection->getDefaultProperties();
 
         $propertyValues = [];
+
         if (array_key_exists($propertyName, $defaults) && is_array($defaults[$propertyName])) {
             $propertyValues = array_values(array_filter($defaults[$propertyName], 'is_string'));
         }
@@ -131,27 +134,29 @@ class Models extends Collector
 
         if ($attributeClass) {
             try {
-                $reflection = new ReflectionClass($model);
                 do {
                     $attributes = $reflection->getAttributes($attributeClass);
+
                     if (count($attributes) > 0) {
                         $arguments = $attributes[0]->getArguments();
                         $columns = [];
+
                         if (count($arguments) > 0) {
                             $firstArg = reset($arguments);
+
                             if (is_array($firstArg)) {
                                 $columns = $firstArg;
                             } else {
                                 $columns = $arguments;
                             }
                         }
-                        if (is_array($columns)) {
-                            $attributeValues = array_values(array_filter($columns, 'is_string'));
-                        }
+
+                        $attributeValues = array_values(array_filter($columns, 'is_string'));
+
                         break;
                     }
                 } while ($reflection = $reflection->getParentClass());
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 // Ignore any reflection or class loading errors
             }
         }
