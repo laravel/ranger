@@ -25,6 +25,7 @@ use Laravel\Surveyor\Types\Contracts\Type as SurveyorTypeContract;
 use Laravel\Surveyor\Types\Type;
 use ReflectionClass;
 use Spatie\StructureDiscoverer\Discover;
+use Throwable;
 
 class Models extends Collector
 {
@@ -113,13 +114,54 @@ class Models extends Collector
      */
     protected function getModelArrayProperty(string $model, string $propertyName): array
     {
-        $defaults = (new ReflectionClass($model))->getDefaultProperties();
+        $reflection = new ReflectionClass($model);
+        $defaults = $reflection->getDefaultProperties();
 
-        if (! array_key_exists($propertyName, $defaults) || ! is_array($defaults[$propertyName])) {
-            return [];
+        $propertyValues = [];
+
+        if (array_key_exists($propertyName, $defaults) && is_array($defaults[$propertyName])) {
+            $propertyValues = array_values(array_filter($defaults[$propertyName], 'is_string'));
         }
 
-        return array_values(array_filter($defaults[$propertyName], 'is_string'));
+        $attributeClass = match ($propertyName) {
+            'visible' => 'Illuminate\Database\Eloquent\Attributes\Visible',
+            'hidden' => 'Illuminate\Database\Eloquent\Attributes\Hidden',
+            'appends' => 'Illuminate\Database\Eloquent\Attributes\Appends',
+            default => null,
+        };
+
+        $attributeValues = [];
+
+        if ($attributeClass) {
+            try {
+                do {
+                    $attributes = $reflection->getAttributes($attributeClass);
+
+                    if (count($attributes) > 0) {
+                        $arguments = $attributes[0]->getArguments();
+                        $columns = [];
+
+                        if (count($arguments) > 0) {
+                            $firstArg = reset($arguments);
+
+                            if (is_array($firstArg)) {
+                                $columns = $firstArg;
+                            } else {
+                                $columns = $arguments;
+                            }
+                        }
+
+                        $attributeValues = array_values(array_filter($columns, 'is_string'));
+
+                        break;
+                    }
+                } while ($reflection = $reflection->getParentClass());
+            } catch (Throwable) {
+                // Ignore any reflection or class loading errors
+            }
+        }
+
+        return array_values(array_unique(array_merge($propertyValues, $attributeValues)));
     }
 
     protected function shouldSnakeCase(ClassLikeResult $result): bool

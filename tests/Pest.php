@@ -18,3 +18,8 @@ pest()
             $collector->setBasePaths($this->app->basePath());
         });
     });
+
+// Mock Laravel 13 Eloquent attribute classes if running in Laravel 11/12 environment
+if (! class_exists('Illuminate\Database\Eloquent\Attributes\Visible')) {
+    require_once __DIR__.'/Mocks/Laravel13Attributes.php';
+}
