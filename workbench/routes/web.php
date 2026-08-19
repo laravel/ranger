@@ -15,6 +15,7 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\TwoRoutesSameActionController;
 use App\Http\Controllers\UrlDefaultsController;
+use App\Http\Middleware\QuotedUrlDefaultsMiddleware;
 use App\Http\Middleware\UrlDefaultsMiddleware;
 use Illuminate\Support\Facades\Route;
 
@@ -51,6 +52,7 @@ Route::get('/audit-entries/{audit_entry}', [AuditEntryController::class, 'show']
 
 Route::middleware(UrlDefaultsMiddleware::class)->post('/with-defaults/{locale}', [UrlDefaultsController::class, 'onlyDefaults']);
 Route::middleware(UrlDefaultsMiddleware::class)->post('/with-defaults/{locale}/also/{timezone}', [UrlDefaultsController::class, 'mixedDefaults']);
+Route::middleware(QuotedUrlDefaultsMiddleware::class)->post('/with-quoted-defaults/{doubleQuoted}/{singleQuoted}/{escaped}/{flag}/{word}', [UrlDefaultsController::class, 'quotedDefaults']);
 
 Route::get('/keys/{key}', [KeyController::class, 'show']);
 Route::get('/keys/{key:uuid}/edit', [KeyController::class, 'edit']);
