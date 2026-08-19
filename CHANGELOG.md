@@ -1,6 +1,26 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/ranger/compare/v0.2.5...main)
+## [Unreleased](https://github.com/laravel/ranger/compare/v0.3.0...main)
+
+## [v0.3.0](https://github.com/laravel/ranger/compare/v0.2.5...v0.3.0) - 2026-08-19
+
+### What's Changed
+
+* Add Dependabot cooldown of 5 days by [@nunomaduro](https://github.com/nunomaduro) in https://github.com/laravel/ranger/pull/38
+* Add support for eloquent class attributes by [@jradtilbrook](https://github.com/jradtilbrook) in https://github.com/laravel/ranger/pull/37
+* Enable Dependabot auto-merge by [@nunomaduro](https://github.com/nunomaduro) in https://github.com/laravel/ranger/pull/39
+* Bump actions/checkout from 6.0.2 to 6.0.3 in the github-actions group by [@dependabot](https://github.com/dependabot)[bot] in https://github.com/laravel/ranger/pull/40
+* Bump actions/checkout from 6.0.3 to 7.0.0 in the github-actions group by [@dependabot](https://github.com/dependabot)[bot] in https://github.com/laravel/ranger/pull/42
+* Bump actions/checkout from 7.0.0 to 7.0.1 in the github-actions group by [@dependabot](https://github.com/dependabot)[bot] in https://github.com/laravel/ranger/pull/43
+* Count a single rule parameter as having parameters by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/ranger/pull/44
+* Stop stripping quotes from URL default values by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/ranger/pull/45
+
+### New Contributors
+
+* [@jradtilbrook](https://github.com/jradtilbrook) made their first contribution in https://github.com/laravel/ranger/pull/37
+* [@dependabot](https://github.com/dependabot)[bot] made their first contribution in https://github.com/laravel/ranger/pull/40
+
+**Full Changelog**: https://github.com/laravel/ranger/compare/v0.2.5...v0.3.0
 
 ## [v0.2.5](https://github.com/laravel/ranger/compare/v0.2.4...v0.2.5) - 2026-05-19
 
