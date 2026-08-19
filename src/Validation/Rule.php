@@ -34,6 +34,6 @@ class Rule
 
     public function hasParams(): bool
     {
-        return count($this->getParams()) > 1;
+        return $this->getParams() !== [];
     }
 }
