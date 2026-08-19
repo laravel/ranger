@@ -167,6 +167,19 @@ describe('URL defaults from middleware', function () {
         expect($localeParam->default)->toBe('en');
     });
 
+    it('keeps quotes that are part of the default value', function () {
+        $quotedRoute = $this->routes->first(fn (Route $r) => str_contains($r->uri(), 'with-quoted-defaults'));
+        $params = $quotedRoute->parameters();
+
+        $defaults = $params->mapWithKeys(fn (RouteParameter $p) => [$p->name => $p->default]);
+
+        expect($defaults['doubleQuoted'])->toBe('say "hi"');
+        expect($defaults['singleQuoted'])->toBe("it's here");
+        expect($defaults['escaped'])->toBe('it\'s "quoted"');
+        expect($defaults['flag'])->toBe('1');
+        expect($defaults['word'])->toBe('true');
+    });
+
     it('handles mixed defaults and non-defaults', function () {
         $mixedRoute = $this->routes->first(fn (Route $r) => str_contains($r->uri(), 'also'));
         $params = $mixedRoute->parameters();

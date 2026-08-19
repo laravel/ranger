@@ -126,6 +126,24 @@ class Routes extends Collector
         return $this->urlDefaults[$middleware] ??= $this->getDefaultsFromClassMethod($middleware, 'handle');
     }
 
+    /**
+     * Unwrap a quoted token, leaving quotes that belong to the value itself in place.
+     */
+    protected function tokenValue(string $token): string
+    {
+        $quote = $token[0] ?? '';
+
+        if (strlen($token) < 2 || ! in_array($quote, ["'", '"']) || ! str_ends_with($token, $quote)) {
+            return $token;
+        }
+
+        $contents = substr($token, 1, -1);
+
+        return $quote === "'"
+            ? preg_replace('/\\\\([\\\\\'])/', '$1', $contents)
+            : stripcslashes($contents);
+    }
+
     protected function getDefaultsFromClassMethod(string $class, string $method)
     {
         if (! class_exists($class)) {
@@ -204,15 +222,18 @@ class Routes extends Collector
                     $valueToken = $tokens[$index + $count];
                 }
 
-                $value = trim($valueToken[1], "'\"");
+                $isString = is_array($valueToken) && $valueToken[0] === T_CONSTANT_ENCAPSED_STRING;
+                $value = $this->tokenValue($valueToken[1]);
 
-                $value = match ($value) {
-                    'true' => 1,
-                    'false' => 0,
-                    default => $value,
-                };
+                if (! $isString) {
+                    $value = match ($value) {
+                        'true' => 1,
+                        'false' => 0,
+                        default => $value,
+                    };
+                }
 
-                $defaults[trim($previousToken[1], "'\"")] = $value;
+                $defaults[$this->tokenValue($previousToken[1])] = $value;
             }
 
             // Check for the closing bracket of the array
