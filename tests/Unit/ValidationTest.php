@@ -44,9 +44,11 @@ describe('Rule class', function () {
 
     it('detects when rule has parameters', function () {
         $ruleWithParams = new Rule(['max', ['value' => 255, 'other' => true]]);
-        $ruleWithoutParams = new Rule(['required', ['only' => 'one']]);
+        $ruleWithOneParam = new Rule(['array', ['only' => 'one']]);
+        $ruleWithoutParams = new Rule(['required', []]);
 
         expect($ruleWithParams->hasParams())->toBeTrue();
+        expect($ruleWithOneParam->hasParams())->toBeTrue();
         expect($ruleWithoutParams->hasParams())->toBeFalse();
     });
 });
