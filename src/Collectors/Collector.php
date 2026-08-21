@@ -4,6 +4,7 @@ namespace Laravel\Ranger\Collectors;
 
 use Illuminate\Support\Collection;
 use Laravel\Ranger\Support\HasPaths;
+use Laravel\Ranger\Support\Inventory;
 
 abstract class Collector
 {
@@ -32,6 +33,11 @@ abstract class Collector
     public function getCollection(): Collection
     {
         return $this->cached ??= $this->collect();
+    }
+
+    protected function inventory(): Inventory
+    {
+        return Inventory::in(...$this->appPaths);
     }
 
     abstract public function collect(): Collection;

@@ -10,7 +10,6 @@ use Laravel\Surveyor\Types\ArrayType;
 use Laravel\Surveyor\Types\BoolType;
 use Laravel\Surveyor\Types\Type;
 use Laravel\Surveyor\Types\UnionType;
-use Spatie\StructureDiscoverer\Discover;
 
 class InertiaSharedData extends Collector
 {
@@ -24,10 +23,7 @@ class InertiaSharedData extends Collector
      */
     public function collect(): Collection
     {
-        $discovered = Discover::in(...$this->appPaths)
-            ->classes()
-            ->extending('Inertia\\Middleware')
-            ->get();
+        $discovered = $this->inventory()->classesExtending('Inertia\\Middleware');
 
         return collect($discovered)->map($this->processSharedData(...));
     }

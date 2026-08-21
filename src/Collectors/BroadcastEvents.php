@@ -10,8 +10,6 @@ use Laravel\Surveyor\Analyzed\ClassLikeResult;
 use Laravel\Surveyor\Analyzer\Analyzer;
 use Laravel\Surveyor\Types\ArrayType;
 use Laravel\Surveyor\Types\Contracts\Type;
-use Spatie\StructureDiscoverer\Discover;
-use Spatie\StructureDiscoverer\Support\Conditions\ConditionBuilder;
 
 class BroadcastEvents extends Collector
 {
@@ -25,12 +23,7 @@ class BroadcastEvents extends Collector
      */
     public function collect(): Collection
     {
-        $discovered = Discover::in(...$this->appPaths)
-            ->any(
-                ConditionBuilder::create()->classes()->implementing(ShouldBroadcast::class),
-                ConditionBuilder::create()->classes()->implementing(ShouldBroadcastNow::class),
-            )
-            ->get();
+        $discovered = $this->inventory()->classesImplementing(ShouldBroadcast::class, ShouldBroadcastNow::class);
 
         return collect($discovered)
             ->filter()
