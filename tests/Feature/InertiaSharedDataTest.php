@@ -10,7 +10,7 @@ beforeEach(function () {
 it('collects all inertia middleware classes', function () {
     $sharedData = $this->collector->collect();
 
-    expect($sharedData)->toHaveCount(2);
+    expect($sharedData)->toHaveCount(3);
 });
 
 it('creates shared data components with correct structure', function () {

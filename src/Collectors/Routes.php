@@ -11,6 +11,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Ranger\Components\Route;
 use Laravel\Ranger\Support\Config;
+use Laravel\Ranger\Support\Ignores;
 use ReflectionClass;
 use ReflectionProperty;
 
@@ -77,7 +78,30 @@ class Routes extends Collector
             return false;
         }
 
+        if ($this->actionIsMarkedIgnored($route)) {
+            return false;
+        }
+
         return count($this->ignoreUrls) === 0 || ! Str::is($this->ignoreUrls, $route->uri());
+    }
+
+    protected function actionIsMarkedIgnored(BaseRoute $route): bool
+    {
+        $controller = $route->getControllerClass();
+
+        if (! $controller || ! class_exists(ltrim($controller, '\\'))) {
+            return false;
+        }
+
+        $reflection = new ReflectionClass(ltrim($controller, '\\'));
+
+        if (Ignores::marked($reflection)) {
+            return true;
+        }
+
+        $method = $route->getActionMethod();
+
+        return $reflection->hasMethod($method) && Ignores::marked($reflection->getMethod($method));
     }
 
     protected function resolveResponses(Route $route): Route

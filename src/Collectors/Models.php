@@ -16,6 +16,7 @@ use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Laravel\Ranger\Components\Model as ModelComponent;
+use Laravel\Ranger\Support\Ignores;
 use Laravel\Surveyor\Analyzed\ClassLikeResult;
 use Laravel\Surveyor\Analyzer\Analyzer;
 use Laravel\Surveyor\Types\ArrayType;
@@ -29,6 +30,9 @@ use Throwable;
 class Models extends Collector
 {
     protected Collection $modelComponents;
+
+    /** @var array<class-string<Model>, true> */
+    protected array $ignoredModels = [];
 
     public function __construct(protected Analyzer $analyzer)
     {
@@ -67,6 +71,12 @@ class Models extends Collector
         $result = $this->analyzer->analyzeClass($model)->result();
 
         if ($result === null) {
+            return;
+        }
+
+        if ($result->isIgnored() || Ignores::markedClass($model)) {
+            $this->ignoredModels[$model] = true;
+
             return;
         }
 
@@ -185,6 +195,12 @@ class Models extends Collector
 
         if (! $this->modelComponents->offsetExists($relatedModel->value)) {
             $this->toComponent($relatedModel->value);
+        }
+
+        // The related model is not being generated, so there is no type left
+        // for the relation to point at.
+        if (isset($this->ignoredModels[$relatedModel->value])) {
+            return null;
         }
 
         $collectionRelations = [

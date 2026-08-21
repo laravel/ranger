@@ -70,6 +70,21 @@ $ranger->walk();
 | **Inertia Shared Data**   | Globally shared Inertia.js props                                                                               |
 | **Inertia Components**    | Inertia.js page components with their expected props                                                           |
 
+Each collector skips whatever carries an ignore marker. See [Ignore Markers](#ignore-markers).
+
+### Ignore Markers
+
+Every collector leaves out declarations an application has marked to be left out, so a consumer cannot pass on something the author held back. Ranger honors any attribute implementing `Laravel\Surveyor\Contracts\Ignored`, on a model, an enum or one of its cases, a broadcast event or channel, and a controller class or action, whose routes are dropped with it. A relation pointing at a marked model is dropped too, since no type is left to point at.
+
+Markers can carry a condition, which ranger resolves as a config key, a `[class, method]` callable, or a plain bool:
+
+```php
+#[Ignore(unless: 'services.fake_source_provider')]
+case GitFake = 'gitfake';
+```
+
+Conditions are resolved while collecting, not while analyzing, so a cached analysis is still answered for the environment collecting it.
+
 ## Contributing
 
 Thank you for considering contributing to Ranger! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).

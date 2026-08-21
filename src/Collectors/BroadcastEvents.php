@@ -6,6 +6,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Support\Collection;
 use Laravel\Ranger\Components\BroadcastEvent;
+use Laravel\Ranger\Support\Ignores;
 use Laravel\Surveyor\Analyzed\ClassLikeResult;
 use Laravel\Surveyor\Analyzer\Analyzer;
 use Laravel\Surveyor\Types\ArrayType;
@@ -27,15 +28,21 @@ class BroadcastEvents extends Collector
 
         return collect($discovered)
             ->filter()
-            ->map($this->toBroadcastEvent(...));
+            ->map($this->toBroadcastEvent(...))
+            ->filter()
+            ->values();
     }
 
     /**
      * @param  class-string<ShouldBroadcast>  $class
      */
-    protected function toBroadcastEvent(string $class): BroadcastEvent
+    protected function toBroadcastEvent(string $class): ?BroadcastEvent
     {
         $analyzed = $this->analyzer->analyzeClass($class)->result();
+
+        if ($analyzed->isIgnored() || Ignores::markedClass($class)) {
+            return null;
+        }
 
         $eventName = $this->resolveEventName($analyzed, $class);
         $broadcastWith = $this->resolveBroadcastWith($analyzed);

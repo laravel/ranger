@@ -8,6 +8,8 @@ use Laravel\Ranger\Collectors\BroadcastEvents;
 use Laravel\Ranger\Collectors\Enums;
 use Laravel\Ranger\Collectors\Models;
 use Laravel\Ranger\Collectors\Routes;
+use Laravel\Ranger\Support\Ignores;
+use Laravel\Surveyor\Support\Markers;
 
 class RangerServiceProvider extends ServiceProvider
 {
@@ -29,6 +31,8 @@ class RangerServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerPublishing();
+
+        Markers::registerConditionResolver([Ignores::class, 'evaluate']);
     }
 
     /**
