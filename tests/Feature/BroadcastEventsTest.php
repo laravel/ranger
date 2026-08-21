@@ -16,7 +16,7 @@ describe('broadcast event collection', function () {
         $events = $this->collector->collect();
 
         expect($events)->not->toBeEmpty();
-        expect($events)->toHaveCount(4);
+        expect($events)->toHaveCount(5);
     });
 
     it('finds UserCreated event', function () {

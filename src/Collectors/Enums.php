@@ -5,7 +5,9 @@ namespace Laravel\Ranger\Collectors;
 use BackedEnum;
 use Illuminate\Support\Collection;
 use Laravel\Ranger\Components\Enum as EnumComponent;
-use ReflectionClass;
+use Laravel\Ranger\Support\Ignores;
+use ReflectionEnum;
+use ReflectionEnumBackedCase;
 use Spatie\StructureDiscoverer\Discover;
 
 class Enums extends Collector
@@ -16,20 +18,36 @@ class Enums extends Collector
     public function collect(): Collection
     {
         return collect(Discover::in(...$this->appPaths)->enums()->get())
-            ->map($this->toComponent(...));
+            ->map($this->toComponent(...))
+            ->filter()
+            ->values();
     }
 
     /**
      * @param  class-string<BackedEnum|\UnitEnum>  $enum
      */
-    protected function toComponent(string $enum): EnumComponent
+    protected function toComponent(string $enum): ?EnumComponent
     {
-        $cases = collect($enum::cases())
-            ->mapWithKeys(fn ($case, $index) => [$case->name => $case instanceof BackedEnum ? $case->value : (int) $index])
-            ->all();
+        $reflection = new ReflectionEnum($enum);
+
+        if (Ignores::marked($reflection)) {
+            return null;
+        }
+
+        $cases = [];
+
+        foreach ($reflection->getCases() as $index => $case) {
+            if (Ignores::marked($case)) {
+                continue;
+            }
+
+            $cases[$case->getName()] = $case instanceof ReflectionEnumBackedCase
+                ? $case->getBackingValue()
+                : $index;
+        }
 
         $component = new EnumComponent($enum, $cases);
-        $component->setFilePath((new ReflectionClass($enum))->getFileName());
+        $component->setFilePath($reflection->getFileName());
 
         return $component;
     }
