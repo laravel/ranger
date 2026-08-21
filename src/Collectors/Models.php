@@ -25,7 +25,6 @@ use Laravel\Surveyor\Types\ClassType;
 use Laravel\Surveyor\Types\Contracts\Type as SurveyorTypeContract;
 use Laravel\Surveyor\Types\Type;
 use ReflectionClass;
-use Spatie\StructureDiscoverer\Discover;
 use Throwable;
 
 class Models extends Collector
@@ -45,10 +44,7 @@ class Models extends Collector
      */
     public function collect(): Collection
     {
-        $discovered = Discover::in(...$this->appPaths)
-            ->classes()
-            ->extending(Model::class, User::class, Pivot::class)
-            ->get();
+        $discovered = $this->inventory()->classesExtending(Model::class, User::class, Pivot::class);
 
         foreach ($discovered as $model) {
             $this->toComponent($model);

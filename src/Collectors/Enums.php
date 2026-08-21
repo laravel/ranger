@@ -8,7 +8,6 @@ use Laravel\Ranger\Components\Enum as EnumComponent;
 use Laravel\Ranger\Support\Ignores;
 use ReflectionEnum;
 use ReflectionEnumBackedCase;
-use Spatie\StructureDiscoverer\Discover;
 
 class Enums extends Collector
 {
@@ -17,7 +16,7 @@ class Enums extends Collector
      */
     public function collect(): Collection
     {
-        return collect(Discover::in(...$this->appPaths)->enums()->get())
+        return collect($this->inventory()->enums())
             ->map($this->toComponent(...))
             ->filter()
             ->values();

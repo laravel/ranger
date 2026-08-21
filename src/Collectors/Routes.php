@@ -14,7 +14,6 @@ use Laravel\Ranger\Support\Config;
 use Laravel\Ranger\Support\Ignores;
 use ReflectionClass;
 use ReflectionProperty;
-use Spatie\StructureDiscoverer\Discover;
 
 class Routes extends Collector
 {
@@ -57,10 +56,7 @@ class Routes extends Collector
 
     protected function collectProviderUrlDefaults(): void
     {
-        $discovered = Discover::in(...$this->appPaths)
-            ->classes()
-            ->extending(ServiceProvider::class)
-            ->get();
+        $discovered = $this->inventory()->classesExtending(ServiceProvider::class);
 
         foreach ($discovered as $class) {
             $this->universalUrlDefaults = array_merge(
