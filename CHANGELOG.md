@@ -1,6 +1,14 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/ranger/compare/v0.4.0...main)
+## [Unreleased](https://github.com/laravel/ranger/compare/v0.5.0...main)
+
+## [v0.5.0](https://github.com/laravel/ranger/compare/v0.4.0...v0.5.0) - 2026-08-21
+
+### What's Changed
+
+* Leave marked declarations out of collected components by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/ranger/pull/47
+
+**Full Changelog**: https://github.com/laravel/ranger/compare/v0.4.0...v0.5.0
 
 ## [v0.4.0](https://github.com/laravel/ranger/compare/v0.3.0...v0.4.0) - 2026-08-21
 
