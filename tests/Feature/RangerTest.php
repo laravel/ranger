@@ -123,7 +123,7 @@ describe('enum callbacks', function () {
 
         $this->ranger->walk();
 
-        expect($enums)->toHaveCount(6);
+        expect($enums)->toHaveCount(7);
     });
 
     it('registers onEnums collection callback', function () {
@@ -136,7 +136,7 @@ describe('enum callbacks', function () {
         $this->ranger->walk();
 
         expect($receivedCollection)->toBeInstanceOf(Collection::class);
-        expect($receivedCollection)->toHaveCount(6);
+        expect($receivedCollection)->toHaveCount(7);
     });
 });
 
@@ -212,7 +212,7 @@ describe('multiple callbacks', function () {
 
         $this->ranger->walk();
 
-        expect($callCount)->toBe(12);
+        expect($callCount)->toBe(14);
     });
 
     it('supports callbacks for different types', function () {

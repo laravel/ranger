@@ -3,6 +3,7 @@
 namespace App\Enums;
 
 use App\Attributes\Ignore;
+use App\Support\MetaCalls;
 
 enum PartiallyIgnoredEnum: string
 {
@@ -12,4 +13,11 @@ enum PartiallyIgnoredEnum: string
     case INTERNAL_CASE = 'internal';
 
     case OTHER_CASE = 'other';
+
+    public function label(): string
+    {
+        MetaCalls::record($this->name);
+
+        return ucfirst($this->value);
+    }
 }

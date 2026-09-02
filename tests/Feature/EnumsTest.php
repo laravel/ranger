@@ -14,7 +14,7 @@ beforeEach(function () {
 it('collects all enums from the application', function () {
     $enums = $this->collector->collect();
 
-    expect($enums)->toHaveCount(6);
+    expect($enums)->toHaveCount(7);
     expect($enums->pluck('name')->toArray())->toContain(Status::class, UserRole::class);
 });
 

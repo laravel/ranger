@@ -45,7 +45,7 @@ it('does not follow ancestry beyond the scanned paths', function () {
 
 it('finds enums', function () {
     expect($this->inventory->enums())
-        ->toHaveCount(4)
+        ->toHaveCount(8)
         ->toContain(Status::class, UserRole::class);
 });
 
