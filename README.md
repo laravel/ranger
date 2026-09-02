@@ -63,7 +63,7 @@ $ranger->walk();
 | ------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | **Routes**                | All registered routes with URIs, parameters, HTTP verbs, controllers, validation rules, and possible responses |
 | **Models**                | Eloquent models with their attributes, types, and relationships                                                |
-| **Enums**                 | PHP backed enums with their cases and values                                                                   |
+| **Enums**                 | PHP enums with their cases, values, and the meta each case's methods return                                    |
 | **Broadcast Events**      | Events implementing `ShouldBroadcast` with their payloads                                                      |
 | **Broadcast Channels**    | Registered broadcast channels                                                                                  |
 | **Environment Variables** | Variables defined in your `.env` file                                                                          |
@@ -72,9 +72,33 @@ $ranger->walk();
 
 Each collector skips whatever carries an ignore marker. See [Ignore Markers](#ignore-markers).
 
+### Enum Meta
+
+An enum component carries its cases, and can also hand back what every no-argument method on the enum returns for each case, keyed by case name then method name:
+
+```php
+enum Status: string
+{
+    case Active = 'active';
+    case Draft = 'draft';
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::Active => 'Is Active',
+            self::Draft => 'Is Draft',
+        };
+    }
+}
+
+$enum->meta(); // ['Active' => ['label' => 'Is Active'], 'Draft' => ['label' => 'Is Draft']]
+```
+
+Resolving means calling the methods, so it waits until you ask: collecting an enum never runs an application's own code. A method is left out unless it is public, declared on the enum itself, takes no required arguments, and returns something representable as data. Objects are unwrapped through `JsonSerializable`, `Arrayable`, or `Stringable`, and a backed enum comes back as its value. A method that throws, or returns something we cannot represent, is left out for that case alone, so a method covering only some cases still makes it through.
+
 ### Ignore Markers
 
-Every collector leaves out declarations an application has marked to be left out, so a consumer cannot pass on something the author held back. Ranger honors any attribute implementing `Laravel\Surveyor\Contracts\Ignored`, on a model, an enum or one of its cases, a broadcast event or channel, and a controller class or action, whose routes are dropped with it. A relation pointing at a marked model is dropped too, since no type is left to point at.
+Every collector leaves out declarations an application has marked to be left out, so a consumer cannot pass on something the author held back. Ranger honors any attribute implementing `Laravel\Surveyor\Contracts\Ignored`, on a model, an enum or one of its cases or methods, a broadcast event or channel, and a controller class or action, whose routes are dropped with it. A relation pointing at a marked model is dropped too, since no type is left to point at.
 
 Markers can carry a condition, which ranger resolves as a config key, a `[class, method]` callable, or a plain bool:
 
