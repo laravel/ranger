@@ -1,6 +1,14 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/ranger/compare/v0.5.0...main)
+## [Unreleased](https://github.com/laravel/ranger/compare/v0.5.1...main)
+
+## [v0.5.1](https://github.com/laravel/ranger/compare/v0.5.0...v0.5.1) - 2026-09-02
+
+### What's Changed
+
+* Handle enum meta and ignoring enum meta by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/ranger/pull/48
+
+**Full Changelog**: https://github.com/laravel/ranger/compare/v0.5.0...v0.5.1
 
 ## [v0.5.0](https://github.com/laravel/ranger/compare/v0.4.0...v0.5.0) - 2026-08-21
 
