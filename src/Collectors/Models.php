@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOneOrMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
-use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Laravel\Ranger\Components\Model as ModelComponent;
@@ -44,7 +43,7 @@ class Models extends Collector
      */
     public function collect(): Collection
     {
-        $discovered = $this->inventory()->classesExtending(Model::class, User::class, Pivot::class);
+        $discovered = $this->inventory()->classesExtending(Model::class, 'Illuminate\Foundation\Auth\User', Pivot::class);
 
         foreach ($discovered as $model) {
             $this->toComponent($model);
