@@ -31,7 +31,7 @@
         "vlucas/phpdotenv": "^5.6"
     },
     "require-dev": {
-        "inertiajs/inertia-laravel": "^2.0",
+        "inertiajs/inertia-laravel": "^3.0",
         "laravel/pint": "^1.22",
         "orchestra/testbench": "^10.0|^11.0",
         "pestphp/pest": "^3.0",
