@@ -2,6 +2,7 @@
 
 namespace Laravel\Ranger\Collectors;
 
+use Illuminate\Broadcasting\Broadcasters\Broadcaster;
 use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Support\Collection;
 use Laravel\Ranger\Components\BroadcastChannel;
@@ -19,7 +20,13 @@ class BroadcastChannels extends Collector
      */
     public function collect(): Collection
     {
-        return collect($this->broadcastManager->getChannels())
+        $broadcaster = $this->broadcastManager->driver();
+
+        // getChannels() is on the abstract broadcaster rather than the
+        // contract, so a driver that only implements the contract has none.
+        $channels = $broadcaster instanceof Broadcaster ? $broadcaster->getChannels() : [];
+
+        return collect($channels)
             ->reject(fn ($channel) => is_string($channel) && Ignores::markedClass($channel))
             ->map(fn ($channel, $name) => new BroadcastChannel($name, $channel));
     }

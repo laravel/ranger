@@ -13,10 +13,11 @@ use Laravel\Surveyor\Analyzer\Analyzer;
 use Laravel\Surveyor\Analyzer\ArrayableResolver;
 use Laravel\Surveyor\Types\ArrayType;
 use Laravel\Surveyor\Types\ClassType;
-use Laravel\Surveyor\Types\Contracts\MultiType;
 use Laravel\Surveyor\Types\Entities\InertiaRender;
 use Laravel\Surveyor\Types\Entities\JsonApiResourceResponse as SurveyorJsonApiResourceResponse;
 use Laravel\Surveyor\Types\Entities\ResourceResponse as SurveyorResourceResponse;
+use Laravel\Surveyor\Types\IntersectionType;
+use Laravel\Surveyor\Types\UnionType;
 
 class Response
 {
@@ -134,7 +135,11 @@ class Response
     protected function filterReturnTypesFor(MethodResult $result, Closure $filter): array
     {
         $returnType = $result->returnType();
-        $returnTypes = ($returnType instanceof MultiType) ? $returnType->types : [$returnType];
+        // The MultiType contract declares no members, so the implementations
+        // that actually hold a list of types are named here instead.
+        $returnTypes = ($returnType instanceof UnionType || $returnType instanceof IntersectionType)
+            ? $returnType->types
+            : [$returnType];
 
         return array_values(array_filter($returnTypes, $filter));
     }

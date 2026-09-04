@@ -245,7 +245,7 @@ class Route
     protected function resolveParameters(): Collection
     {
         $optionalParameters = collect($this->base->toSymfonyRoute()->getDefaults());
-        $signatureParams = collect($this->base->signatureParameters(UrlRoutable::class));
+        $signatureParams = collect($this->base->signatureParameters(['subClass' => UrlRoutable::class]));
 
         return collect($this->base->parameterNames())->map(fn ($name) => new RouteParameter(
             $name,
