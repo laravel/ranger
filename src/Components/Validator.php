@@ -2,10 +2,12 @@
 
 namespace Laravel\Ranger\Components;
 
+use Laravel\Ranger\Validation\Rule;
+
 class Validator
 {
     /**
-     * @var array<string, list<Rule>>
+     * @param  array<string, list<Rule>>  $rules
      */
     public function __construct(
         public readonly array $rules,

@@ -2,6 +2,8 @@
 
 namespace Laravel\Ranger\Components;
 
+use Laravel\Surveyor\Types\Contracts\Type;
+
 class InertiaResponse
 {
     /**

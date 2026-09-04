@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\OrderShipped;
 use App\Events\PostCreated;
 use App\Events\PostUpdated;
 use App\Events\UserCreated;
@@ -16,7 +17,7 @@ describe('broadcast event collection', function () {
         $events = $this->collector->collect();
 
         expect($events)->not->toBeEmpty();
-        expect($events)->toHaveCount(5);
+        expect($events)->toHaveCount(6);
     });
 
     it('finds UserCreated event', function () {
@@ -63,6 +64,14 @@ describe('broadcast event names', function () {
         $userCreated = $events->first(fn (BroadcastEvent $e) => $e->className === UserCreated::class);
 
         expect($userCreated->name)->toBe(UserCreated::class);
+    });
+
+    it('falls back to the class name when broadcastAs has no literal to read', function () {
+        $events = $this->collector->collect();
+        $orderShipped = $events->first(fn (BroadcastEvent $e) => $e->className === OrderShipped::class);
+
+        expect($orderShipped)->not->toBeNull();
+        expect($orderShipped->name)->toBe(OrderShipped::class);
     });
 });
 

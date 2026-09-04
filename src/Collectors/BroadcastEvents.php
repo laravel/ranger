@@ -11,6 +11,7 @@ use Laravel\Surveyor\Analyzed\ClassLikeResult;
 use Laravel\Surveyor\Analyzer\Analyzer;
 use Laravel\Surveyor\Types\ArrayType;
 use Laravel\Surveyor\Types\Contracts\Type;
+use Laravel\Surveyor\Types\StringType;
 
 class BroadcastEvents extends Collector
 {
@@ -59,7 +60,13 @@ class BroadcastEvents extends Collector
     protected function resolveEventName(ClassLikeResult $analyzed, string $class): string
     {
         if ($analyzed->hasMethod('broadcastAs')) {
-            return $analyzed->getMethod('broadcastAs')->returnType()->value;
+            $returnType = $analyzed->getMethod('broadcastAs')->returnType();
+
+            // A broadcastAs() that builds its name at runtime has no literal to
+            // read, so the class name stays the best answer available.
+            if ($returnType instanceof StringType && $returnType->value !== null) {
+                return $returnType->value;
+            }
         }
 
         return $class;

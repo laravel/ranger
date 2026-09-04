@@ -163,6 +163,9 @@ class Inventory
             }
         }
 
+        // The resolver's docblock names only the subclasses it acts on, but it
+        // reads the whole discovered set.
+        // @phpstan-ignore argument.type
         (new StructureChainResolver)->execute($structures);
 
         return array_values($structures);
@@ -204,7 +207,7 @@ class Inventory
             return false;
         }
 
-        return hash(self::HASH, file_get_contents($file) ?: '') !== ($record['hash'] ?? null);
+        return hash(self::HASH, file_get_contents($file) ?: '') !== $record['hash'];
     }
 
     /**
