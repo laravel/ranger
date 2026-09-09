@@ -3,6 +3,7 @@
 namespace Laravel\Ranger\Collectors;
 
 use Closure;
+use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Routing\Route as BaseRoute;
 use Illuminate\Routing\Router;
 use Illuminate\Routing\UrlGenerator;
@@ -25,6 +26,8 @@ class Routes extends Collector
 
     protected $universalUrlDefaults = [];
 
+    protected $globalMiddleware = [];
+
     protected array $ignoreNames = [];
 
     protected array $ignoreUrls = [];
@@ -46,12 +49,41 @@ class Routes extends Collector
      */
     public function collect(): Collection
     {
+        $this->syncMiddlewareFromHttpKernel();
         $this->collectProviderUrlDefaults();
 
         return collect($this->router->getRoutes())
             ->filter($this->filterRoute(...))
             ->map($this->mapToRoute(...))
             ->map($this->resolveResponses(...));
+    }
+
+    protected function syncMiddlewareFromHttpKernel(): void
+    {
+        if (! app()->bound(HttpKernel::class)) {
+            return;
+        }
+
+        $groups = $this->router->getMiddlewareGroups();
+        $aliases = $this->router->getMiddleware();
+
+        // Resolving the kernel syncs its middleware onto the router, overwriting existing groups
+        $kernel = app(HttpKernel::class);
+
+        foreach ($groups as $group => $middleware) {
+            foreach ($middleware as $name) {
+                $this->router->pushMiddlewareToGroup($group, $name);
+            }
+        }
+
+        foreach ($aliases as $name => $class) {
+            $this->router->aliasMiddleware($name, $class);
+        }
+
+        // Global middleware is never synced to the router, and the getter is not on the kernel contract
+        if (method_exists($kernel, 'getGlobalMiddleware')) {
+            $this->globalMiddleware = $kernel->getGlobalMiddleware();
+        }
     }
 
     protected function collectProviderUrlDefaults(): void
@@ -63,6 +95,13 @@ class Routes extends Collector
                 $this->universalUrlDefaults,
                 $this->getDefaultsFromClassMethod($class, 'register'),
                 $this->getDefaultsFromClassMethod($class, 'boot'),
+            );
+        }
+
+        foreach ($this->globalMiddleware as $middleware) {
+            $this->universalUrlDefaults = array_merge(
+                $this->universalUrlDefaults,
+                $this->collectMiddlewareDefaults($middleware),
             );
         }
     }
