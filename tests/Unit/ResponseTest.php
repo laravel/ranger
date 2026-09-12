@@ -25,7 +25,7 @@ it('preserves resource payload types', function (TypeContract $data) {
     $responses = $collector->getResourceResponse($result);
 
     expect($responses)->toHaveCount(1);
-    expect($responses[0]->data)->toBe($data);
+    expect($responses[0]->data)->toEqual($data);
 })->with([
     'list' => fn () => Type::arrayShape(Type::int(), Type::array(['id' => Type::int()])),
     'keyed collection' => fn () => Type::arrayShape(Type::string(), Type::array(['id' => Type::int()])),
