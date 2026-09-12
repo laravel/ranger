@@ -84,7 +84,7 @@ class Response
 
         return array_map(fn ($response) => new ResourceResponse(
             resourceClass: $response->resourceClass,
-            data: $response->data instanceof ArrayType ? $response->data->value : [],
+            data: $response->data instanceof ArrayType ? $response->data->value : $response->data,
             isCollection: $response->isCollection,
             wrap: $response->wrap,
             additional: $response->additional instanceof ArrayType ? $response->additional->value : [],
