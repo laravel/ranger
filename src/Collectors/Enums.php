@@ -25,6 +25,14 @@ class Enums extends Collector
     /**
      * @param  class-string<BackedEnum|\UnitEnum>  $enum
      */
+    public function get(string $enum): ?EnumComponent
+    {
+        return $this->toComponent($enum);
+    }
+
+    /**
+     * @param  class-string<BackedEnum|\UnitEnum>  $enum
+     */
     protected function toComponent(string $enum): ?EnumComponent
     {
         $reflection = new ReflectionEnum($enum);
