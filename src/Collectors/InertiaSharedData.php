@@ -5,9 +5,11 @@ namespace Laravel\Ranger\Collectors;
 use Illuminate\Support\Collection;
 use Inertia\Middleware;
 use Laravel\Ranger\Components\InertiaSharedData as SharedDataComponent;
+use Laravel\Surveyor\Analyzed\ClassLikeResult;
 use Laravel\Surveyor\Analyzer\Analyzer;
 use Laravel\Surveyor\Types\ArrayType;
 use Laravel\Surveyor\Types\BoolType;
+use Laravel\Surveyor\Types\Contracts\Type as TypeContract;
 use Laravel\Surveyor\Types\Type;
 use Laravel\Surveyor\Types\UnionType;
 
@@ -35,35 +37,47 @@ class InertiaSharedData extends Collector
     {
         $result = $this->analyzer->analyzeClass($class)->result();
 
-        if (! $result->hasMethod('share')) {
-            return new SharedDataComponent(new ArrayType([]));
-        }
-
-        $data = $result->getMethod('share')->returnType();
-
-        if ($data instanceof UnionType) {
-            $finalArray = [];
-
-            foreach ($data->types as $type) {
-                if ($type instanceof ArrayType) {
-                    foreach ($type->value as $key => $value) {
-                        $finalArray[$key] ??= [];
-                        $finalArray[$key][] = $value;
-                    }
-                }
-            }
-
-            foreach ($finalArray as $key => $values) {
-                $finalArray[$key] = Type::union(...$values);
-            }
-
-            $data = new ArrayType($finalArray);
-        }
+        $data = new ArrayType([
+            ...$this->sharedProps($result, 'share'),
+            ...$this->sharedProps($result, 'shareOnce'),
+        ]);
 
         $withAllErrors = $result->hasProperty('withAllErrors')
             && $result->getProperty('withAllErrors')->type instanceof BoolType
             && $result->getProperty('withAllErrors')->type->value === true;
 
         return new SharedDataComponent($data, $withAllErrors);
+    }
+
+    /**
+     * @return array<string, TypeContract>
+     */
+    protected function sharedProps(ClassLikeResult $result, string $method): array
+    {
+        if (! $result->hasMethod($method)) {
+            return [];
+        }
+
+        $data = $result->getMethod($method)->returnType();
+
+        if ($data instanceof ArrayType) {
+            return $data->value;
+        }
+
+        if (! $data instanceof UnionType) {
+            return [];
+        }
+
+        $typesByKey = [];
+
+        foreach ($data->types as $type) {
+            if ($type instanceof ArrayType) {
+                foreach ($type->value as $key => $value) {
+                    $typesByKey[$key][] = $value;
+                }
+            }
+        }
+
+        return array_map(fn (array $types) => Type::union(...$types), $typesByKey);
     }
 }
