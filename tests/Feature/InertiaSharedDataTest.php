@@ -38,3 +38,11 @@ it('sets withAllErrors to true when property is set to true', function () {
 
     expect($component)->toBeInstanceOf(InertiaSharedDataComponent::class);
 });
+
+it('collects the props shared once alongside the props shared on every request', function () {
+    $component = $this->collector->collect()->first(
+        fn (InertiaSharedDataComponent $c) => $c->withAllErrors === false && array_key_exists('flash', $c->data->value)
+    );
+
+    expect($component->data->value)->toHaveKeys(['auth', 'flash', 'locale']);
+});

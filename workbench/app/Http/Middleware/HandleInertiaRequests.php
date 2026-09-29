@@ -19,4 +19,12 @@ class HandleInertiaRequests extends Middleware
             ],
         ];
     }
+
+    public function shareOnce(Request $request): array
+    {
+        return [
+            ...parent::shareOnce($request),
+            'locale' => fn () => app()->getLocale(),
+        ];
+    }
 }
