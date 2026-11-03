@@ -103,6 +103,14 @@ describe('controller detection', function () {
         expect($invokableRoute->method())->toBe('__invoke');
     });
 
+    it('treats an explicit __invoke action as an invokable controller', function () {
+        $route = $this->routes->first(fn (Route $r) => str_ends_with($r->uri(), '/invokable-array-controller'));
+
+        expect($route->hasInvokableController())->toBeTrue();
+        expect($route->controller())->toBe('\\'.InvokableController::class);
+        expect($route->method())->toBe('__invoke');
+    });
+
     it('returns correct method name for controller actions', function () {
         $indexRoute = $this->routes->first(fn (Route $r) => $r->name() === 'posts.index');
         $showRoute = $this->routes->first(fn (Route $r) => $r->name() === 'posts.show');

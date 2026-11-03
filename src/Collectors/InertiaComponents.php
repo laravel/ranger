@@ -64,7 +64,7 @@ class InertiaComponents
 
         foreach ($existingData as $key => $value) {
             if (! in_array($key, $same)) {
-                $value->optional();
+                $existingData[$key] = $value->optional();
             }
         }
 
@@ -89,7 +89,7 @@ class InertiaComponents
                     $existingData[$key] = Type::union(...$value1, ...$value2);
                 }
             } else {
-                $value->optional();
+                $value = $value->optional();
                 $existingData[$key] = $value;
             }
 
