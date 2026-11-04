@@ -4,6 +4,7 @@ use App\Enums\Status;
 use App\Enums\UserRole;
 use App\Events\PostUpdated;
 use App\Events\UserCreated;
+use App\Models\Invoice;
 use App\Models\Post;
 use App\Models\User;
 use App\Providers\WorkbenchServiceProvider;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Ranger\Support\Inventory;
+use Laravel\Ranger\Tests\Fixtures\PackageModel;
 
 beforeEach(function () {
     Inventory::flush();
@@ -31,16 +33,25 @@ it('finds classes extending any of several parents', function () {
     expect($found)->toContain(Post::class, User::class, WorkbenchServiceProvider::class);
 });
 
-// A parent is only followed while it lives in the scanned paths. App\Models\User
-// extends Authenticatable, which lives in the framework, so the chain stops
-// there and asking for Model alone will not find it. This is why the model
-// collector names Model, Authenticatable and Pivot rather than Model alone.
-it('does not follow ancestry beyond the scanned paths', function () {
+// App\Models\User extends Authenticatable, which lives in the framework, so
+// the scanned files alone stop the chain there.
+it('follows ancestry beyond the scanned paths', function () {
     expect($this->inventory->classesExtending(Model::class))
-        ->not->toContain(User::class);
+        ->toContain(User::class);
 
     expect($this->inventory->classesExtending(Authenticatable::class))
         ->toContain(User::class);
+});
+
+it('finds a class whose parent comes from outside the scanned paths', function () {
+    expect($this->inventory->classesExtending(Model::class))
+        ->toContain(Invoice::class)
+        ->not->toContain(PackageModel::class);
+});
+
+it('does not take a class outside the scanned paths for one extending the parent asked for', function () {
+    expect($this->inventory->classesExtending(Authenticatable::class))
+        ->not->toContain(Invoice::class, Post::class);
 });
 
 it('finds enums', function () {

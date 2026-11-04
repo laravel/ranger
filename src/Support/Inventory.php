@@ -5,6 +5,7 @@ namespace Laravel\Ranger\Support;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use Spatie\StructureDiscoverer\Data\DiscoveredClass;
 use Spatie\StructureDiscoverer\Data\DiscoveredStructure;
 use Spatie\StructureDiscoverer\Support\Conditions\ConditionBuilder;
 use Spatie\StructureDiscoverer\Support\Conditions\HasConditions;
@@ -84,7 +85,74 @@ class Inventory
      */
     public function classesExtending(string ...$parents): array
     {
-        return $this->match(ConditionBuilder::create()->classes()->extending(...$parents));
+        $found = $this->match(ConditionBuilder::create()->classes()->extending(...$parents));
+
+        return [...$found, ...$this->extendingBeyondScannedPaths($parents, $found)];
+    }
+
+    /**
+     * Classes whose ancestry leaves the scanned paths before reaching any of
+     * the given parents.
+     *
+     * A chain is only known while it runs through the files that were read, so
+     * a model extending a base model from a package stops at that base model.
+     * Where it stops, the ancestor it stopped at is asked instead, which loads
+     * that one class rather than every class in the application.
+     *
+     * @param  list<string>  $parents
+     * @param  list<class-string>  $found
+     * @return list<class-string>
+     */
+    protected function extendingBeyondScannedPaths(array $parents, array $found): array
+    {
+        $structures = $this->structures();
+        $scanned = [];
+
+        foreach ($structures as $structure) {
+            $scanned[$structure->getFcqn()] = true;
+        }
+
+        $alreadyFound = array_flip($found);
+        $answers = [];
+        $extending = [];
+
+        foreach ($structures as $structure) {
+            if (! $structure instanceof DiscoveredClass || isset($alreadyFound[$structure->getFcqn()])) {
+                continue;
+            }
+
+            $outermost = $structure->extendsChain === null || $structure->extendsChain === []
+                ? $structure->extends
+                : end($structure->extendsChain);
+
+            if ($outermost === null || isset($scanned[$outermost])) {
+                continue;
+            }
+
+            if ($answers[$outermost] ??= $this->isA($outermost, $parents)) {
+                $extending[] = $structure->getFcqn();
+            }
+        }
+
+        return $extending;
+    }
+
+    /**
+     * @param  list<string>  $parents
+     */
+    protected function isA(string $class, array $parents): bool
+    {
+        try {
+            foreach ($parents as $parent) {
+                if (is_a($class, $parent, true)) {
+                    return true;
+                }
+            }
+        } catch (Throwable) {
+            // An ancestor that cannot be loaded is not one we can say anything about.
+        }
+
+        return false;
     }
 
     /**
