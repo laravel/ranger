@@ -1,6 +1,9 @@
 <?php
 
+use App\Enums\ConditionalEnum;
+use App\Enums\IgnoredEnum;
 use App\Enums\NumericEnum;
+use App\Enums\PartiallyIgnoredEnum;
 use App\Enums\Status;
 use App\Enums\UnitEnum;
 use App\Enums\UserRole;
@@ -99,3 +102,47 @@ it('caches collection results', function () {
 
     expect($firstCall)->toBe($secondCall);
 });
+
+it('gets an enum outside the configured application paths', function (string $enum, array $cases) {
+    $this->collector->setAppPaths(app_path('Models'));
+    expect($this->collector->getCollection())->toBeEmpty();
+
+    $component = $this->collector->get($enum);
+
+    expect($component->name)->toBe($enum);
+    expect($component->cases)->toBe($cases);
+    expect($component->filePath())->toBe(realpath(app_path('Enums/'.class_basename($enum).'.php')));
+})->with([
+    'integer backed enum' => [NumericEnum::class, ['ONE' => 1, 'TWO' => 2]],
+    'unit enum' => [UnitEnum::class, ['BAR' => 0, 'FOO' => 1]],
+    'string backed enum with an ignored case' => [PartiallyIgnoredEnum::class, [
+        'PUBLIC_CASE' => 'public',
+        'OTHER_CASE' => 'other',
+    ]],
+]);
+
+it('does not get an ignored enum', function () {
+    expect($this->collector->get(IgnoredEnum::class))->toBeNull();
+});
+
+it('resolves conditional ignore markers when getting an enum', function (array $config, array $cases) {
+    config($config);
+
+    expect($this->collector->get(ConditionalEnum::class)->cases)->toBe($cases);
+})->with([
+    'hidden cases' => [[
+        'features.fake' => false,
+        'features.fake_callable' => false,
+        'features.hide_retired' => true,
+    ], ['REAL' => 'real']],
+    'visible cases' => [[
+        'features.fake' => true,
+        'features.fake_callable' => true,
+        'features.hide_retired' => false,
+    ], [
+        'REAL' => 'real',
+        'FAKE' => 'fake',
+        'CALLABLE_FAKE' => 'callable-fake',
+        'RETIRED' => 'retired',
+    ]],
+]);
