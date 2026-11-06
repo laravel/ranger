@@ -3,6 +3,7 @@
 use App\Models\ApiResponse;
 use App\Models\AttributeVisibility;
 use App\Models\Comment;
+use App\Models\Invoice;
 use App\Models\Post;
 use App\Models\User;
 use App\Models\Visibility;
@@ -28,6 +29,12 @@ describe('model collection', function () {
 
         expect($userModel)->not->toBeNull();
         expect($userModel)->toBeInstanceOf(Model::class);
+    });
+
+    it('finds a model whose base class comes from a package', function () {
+        $models = $this->collector->collect();
+
+        expect($models->first(fn (Model $m) => $m->name === Invoice::class))->not->toBeNull();
     });
 
     it('finds the Post model', function () {
