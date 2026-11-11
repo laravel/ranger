@@ -2,6 +2,7 @@
 
 use App\Models\ApiResponse;
 use App\Models\AttributeVisibility;
+use App\Models\Author;
 use App\Models\Comment;
 use App\Models\Invoice;
 use App\Models\Post;
@@ -11,6 +12,7 @@ use Laravel\Ranger\Collectors\Models;
 use Laravel\Ranger\Components\Model;
 use Laravel\Surveyor\Types\ArrayType;
 use Laravel\Surveyor\Types\ClassType;
+use Laravel\Surveyor\Types\IntType;
 
 beforeEach(function () {
     $this->collector = app(Models::class);
@@ -164,6 +166,43 @@ describe('eager loading', function () {
 
         expect($relations)->toHaveKey('authoredBy');
         expect($relations['authoredBy']->required)->toBeTrue();
+    });
+});
+
+describe('relation counts', function () {
+    it('adds an integer attribute for each relation in $withCount', function () {
+        $models = $this->collector->collect();
+        $author = $models->first(fn (Model $m) => $m->name === Author::class);
+
+        $attributes = $author->getAttributes();
+
+        expect($attributes)->toHaveKey('posts_count');
+        expect($attributes['posts_count'])->toBeInstanceOf(IntType::class);
+        expect($attributes['posts_count']->required)->toBeTrue();
+        expect($attributes['posts_count']->isNullable())->toBeFalse();
+    });
+
+    it('names the count after the snake cased relation', function () {
+        $models = $this->collector->collect();
+        $author = $models->first(fn (Model $m) => $m->name === Author::class);
+
+        expect($author->getAttributes())->toHaveKey('published_posts_count');
+        expect($author->getAttributes()['published_posts_count'])->toBeInstanceOf(IntType::class);
+    });
+
+    it('uses the alias of a relation counted with an as clause', function () {
+        $models = $this->collector->collect();
+        $author = $models->first(fn (Model $m) => $m->name === Author::class);
+
+        expect($author->getAttributes())->toHaveKey('drafts_count');
+        expect($author->getAttributes()['drafts_count'])->toBeInstanceOf(IntType::class);
+    });
+
+    it('keeps the type of a count attribute the model declares itself', function () {
+        $models = $this->collector->collect();
+        $author = $models->first(fn (Model $m) => $m->name === Author::class);
+
+        expect($author->getAttributes()['comments_count']->isNullable())->toBeTrue();
     });
 });
 
