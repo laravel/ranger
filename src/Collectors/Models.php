@@ -96,6 +96,13 @@ class Models extends Collector
             }
         }
 
+        foreach ($this->getWithCountAttributes($model) as $attribute) {
+            // A count the model already declares, such as through an @property tag, keeps its type.
+            if (! array_key_exists($attribute, $modelComponent->getAttributes())) {
+                $modelComponent->addAttribute($attribute, Type::int());
+            }
+        }
+
         foreach ($result->publicMethods() as $method) {
             if ($method->isModelRelation()) {
                 $returnType = $this->resolveReturnType(
@@ -167,6 +174,26 @@ class Models extends Collector
         }
 
         return array_values(array_unique(array_merge($propertyValues, $attributeValues)));
+    }
+
+    /**
+     * The attributes Eloquent selects for each relation counted in $withCount,
+     * named the way the query builder aliases them.
+     *
+     * @param  class-string<Model>  $model
+     * @return list<string>
+     */
+    protected function getWithCountAttributes(string $model): array
+    {
+        return array_map(function (string $relation) {
+            $segments = explode(' ', $relation);
+
+            if (count($segments) === 3 && Str::lower($segments[1]) === 'as') {
+                return $segments[2];
+            }
+
+            return Str::snake(preg_replace('/[^[:alnum:][:space:]_]/u', '', "{$relation} count *"));
+        }, $this->getModelArrayProperty($model, 'withCount'));
     }
 
     protected function shouldSnakeCase(ClassLikeResult $result): bool
